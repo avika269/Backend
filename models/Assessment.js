@@ -1,45 +1,66 @@
 import mongoose from "mongoose";
 
-const questionSchema = new mongoose.Schema({
-  questionNumber: {
-    type: Number,
-    required: true
-  },
+const questionSchema = new mongoose.Schema(
+  {
+    questionNumber: {
+      type: Number,
+      required: true
+    },
 
-  type: {
-    type: String,
-    enum: ["mcq", "spoken", "coding"],
-    required: true
-  },
+    type: {
+      type: String,
+      enum: ["mcq", "spoken", "coding"],
+      required: true
+    },
 
-  question: {
-    type: String,
-    required: true
-  },
+    category: {
+      type: String,
+      default: "Technical Knowledge"
+    },
 
-  options: {
-    type: [String],
-    default: []
-  },
+    question: {
+      type: String,
+      required: true
+    },
 
-  correctAnswer: {
-    type: String,
-    default: null
-  },
+    options: {
+      type: [String],
+      default: []
+    },
 
-  points: {
-    type: Number,
-    default: 1
-  },
+    correctAnswer: {
+      type: String,
+      default: null
+    },
 
-  timeLimit: {
-    type: Number,
-    default: 0
+    points: {
+      type: Number,
+      default: 1
+    },
+
+    timeLimit: {
+      type: Number,
+      default: null
+    },
+
+    order: {
+      type: Number,
+      default: 0
+    }
+  },
+  {
+    _id: true
   }
-});
+);
 
 const assessmentSchema = new mongoose.Schema(
   {
+    recruiterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: false
+    },
+
     title: {
       type: String,
       required: true
@@ -52,12 +73,12 @@ const assessmentSchema = new mongoose.Schema(
 
     duration: {
       type: Number,
-      default: 30
+      required: true
     },
 
     totalQuestions: {
       type: Number,
-      default: 6
+      default: 0
     },
 
     assessmentType: {
@@ -65,14 +86,19 @@ const assessmentSchema = new mongoose.Schema(
       default: "Technical Screening"
     },
 
-    questions: {
-      type: [questionSchema],
-      default: []
+    role: {
+      type: String,
+      default: "Frontend Developer"
     },
 
     active: {
       type: Boolean,
       default: true
+    },
+
+    questions: {
+      type: [questionSchema],
+      default: []
     }
   },
   {
@@ -80,4 +106,7 @@ const assessmentSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Assessment", assessmentSchema);
+export default mongoose.model(
+  "Assessment",
+  assessmentSchema
+);

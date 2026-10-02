@@ -6,24 +6,26 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "seed": "node seed.js"
+    
   },
   "repository": {
-    
     "url": "git+https://github.com/avika269/Backend.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
- 
   "bugs": {
     "url": "https://github.com/avika269/Backend/issues"
   },
   "homepage": "https://github.com/avika269/Backend#readme",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
-    "dotenv": "^18.0.4",
+    "dotenv": "^18.0.5",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.10.3",
     "multer": "^2.4.0"
   },

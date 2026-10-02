@@ -1,51 +1,72 @@
 import mongoose from "mongoose";
 
-const answerSchema = new mongoose.Schema({
-  questionId: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true
-  },
+const answerSchema = new mongoose.Schema(
+  {
+    questionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true
+    },
 
-  answer: {
-    type: String,
-    default: ""
-  },
+    answer: {
+      type: String,
+      default: ""
+    },
 
-  code: {
-    type: String,
-    default: ""
-  },
+    code: {
+      type: String,
+      default: ""
+    },
 
-  audioFile: {
-    type: String,
-    default: ""
-  },
+    audioFile: {
+      type: String,
+      default: ""
+    },
 
-  savedAt: {
-    type: Date,
-    default: Date.now
+    savedAt: {
+      type: Date,
+      default: Date.now
+    }
+  },
+  {
+    _id: false
   }
-});
+);
 
-const eventSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    required: true
+const eventSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      required: true
+    },
+
+    message: {
+      type: String,
+      default: ""
+    },
+
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+
+    timestamp: {
+      type: Date,
+      default: Date.now
+    }
   },
-
-  message: {
-    type: String,
-    default: ""
-  },
-
-  timestamp: {
-    type: Date,
-    default: Date.now
+  {
+    _id: false
   }
-});
+);
 
 const attemptSchema = new mongoose.Schema(
   {
+    candidateId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true
+    },
+
     assessmentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Assessment",
@@ -67,6 +88,7 @@ const attemptSchema = new mongoose.Schema(
       enum: [
         "instructions",
         "system-check",
+        "overview",
         "active",
         "submitted",
         "expired"
@@ -84,19 +106,31 @@ const attemptSchema = new mongoose.Schema(
       default: null
     },
 
-    cameraWorking: {
-      type: Boolean,
-      default: false
-    },
+    checks: {
+      camera: {
+        type: Boolean,
+        default: false
+      },
 
-    microphoneWorking: {
-      type: Boolean,
-      default: false
-    },
+      microphone: {
+        type: Boolean,
+        default: false
+      },
 
-    fullscreenEnabled: {
-      type: Boolean,
-      default: false
+      fullscreen: {
+        type: Boolean,
+        default: false
+      },
+
+      browser: {
+        type: Boolean,
+        default: false
+      },
+
+      connection: {
+        type: Boolean,
+        default: false
+      }
     },
 
     systemCheckCompleted: {
@@ -144,4 +178,7 @@ const attemptSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("Attempt", attemptSchema);
+export default mongoose.model(
+  "Attempt",
+  attemptSchema
+);

@@ -1,65 +1,217 @@
-import express from "express";
+import Assessment from "../models/Assessment.js";
 
-import {
-  createAssessment,
-  getAssessment,
-  updateAssessment,
-  deleteAssessment,
-  createAttempt,
-  acceptInstructions,
-  systemCheck,
-  startAssessment,
-  saveAnswer,
-  saveProctorEvent,
-  submitAssessment,
-  getAttempt
-} from "../controllers/assessment.controller.js";
+const sanitizeQuestion = (
+  question
+) => ({
+  id: question._id,
+  questionNumber:
+    question.questionNumber,
+  type: question.type,
+  category:
+    question.category,
+  question:
+    question.question,
+  options:
+    question.options,
+  points:
+    question.points,
+  timeLimit:
+    question.timeLimit,
+  order:
+    question.order
+});
 
-const router = express.Router();
+export const createAssessment =
+  async (req, res) => {
+    try {
+      const assessment =
+        await Assessment.create({
+          ...req.body,
+          recruiterId:
+            req.user.id
+        });
 
-router.post("/", createAssessment);
+      res.status(201).json({
+        success: true,
+        message:
+          "Assessment created successfully",
+        assessment
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
 
-router.get("/", getAssessment);
+export const getAssessments =
+  async (req, res) => {
+    try {
+      const assessments =
+        await Assessment.find({
+          recruiterId:
+            req.user.id
+        }).sort({
+          createdAt: -1
+        });
 
-router.put("/:assessmentId", updateAssessment);
+      res.json({
+        success: true,
+        assessments
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
 
-router.delete("/:assessmentId", deleteAssessment);
+export const getPublicAssessment =
+  async (req, res) => {
+    try {
+      const assessment =
+        await Assessment.findOne({
+          _id: req.params.assessmentId,
+          active: true
+        });
 
-router.post("/attempt", createAttempt);
+      if (!assessment) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Assessment not found"
+        });
+      }
 
-router.post(
-  "/attempt/:attemptId/accept-instructions",
-  acceptInstructions
-);
+      res.json({
+        success: true,
+        assessment: {
+          id: assessment._id,
+          title: assessment.title,
+          description:
+            assessment.description,
+          duration:
+            assessment.duration,
+          totalQuestions:
+            assessment.totalQuestions,
+          assessmentType:
+            assessment.assessmentType,
+          role:
+            assessment.role,
+          questions:
+            assessment.questions.map(
+              sanitizeQuestion
+            )
+        }
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
 
-router.post(
-  "/attempt/:attemptId/system-check",
-  systemCheck
-);
+export const getAssessment =
+  async (req, res) => {
+    try {
+      const assessment =
+        await Assessment.findOne({
+          _id: req.params.assessmentId,
+          recruiterId:
+            req.user.id
+        });
 
-router.post(
-  "/attempt/:attemptId/start",
-  startAssessment
-);
+      if (!assessment) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Assessment not found"
+        });
+      }
 
-router.post(
-  "/attempt/:attemptId/answer",
-  saveAnswer
-);
+      res.json({
+        success: true,
+        assessment
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
 
-router.post(
-  "/attempt/:attemptId/event",
-  saveProctorEvent
-);
+export const updateAssessment =
+  async (req, res) => {
+    try {
+      const assessment =
+        await Assessment.findOneAndUpdate(
+          {
+            _id:
+              req.params.assessmentId,
+            recruiterId:
+              req.user.id
+          },
+          req.body,
+          {
+            new: true,
+            runValidators: true
+          }
+        );
 
-router.post(
-  "/attempt/:attemptId/submit",
-  submitAssessment
-);
+      if (!assessment) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Assessment not found"
+        });
+      }
 
-router.get(
-  "/attempt/:attemptId",
-  getAttempt
-);
+      res.json({
+        success: true,
+        message:
+          "Assessment updated successfully",
+        assessment
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
 
-export default router;
+export const deleteAssessment =
+  async (req, res) => {
+    try {
+      const assessment =
+        await Assessment.findOneAndDelete({
+          _id:
+            req.params.assessmentId,
+          recruiterId:
+            req.user.id
+        });
+
+      if (!assessment) {
+        return res.status(404).json({
+          success: false,
+          message:
+            "Assessment not found"
+        });
+      }
+
+      res.json({
+        success: true,
+        message:
+          "Assessment deleted successfully"
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  };
