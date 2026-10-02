@@ -2,43 +2,20 @@ import express from "express";
 
 import {
   createAttempt,
-  getAttempt,
   acceptInstructions,
   systemCheck,
-  getOverview,
   startAssessment,
   saveAnswer,
-  uploadSpokenAnswer,
   saveProctorEvent,
-  submitAssessment
+  submitAssessment,
+  getAttempt
 } from "../controllers/attempt.controller.js";
 
-import {
-  authenticate,
-  requireRole
-} from "../middleware/auth.middleware.js";
+import upload from "../middleware/upload.middleware.js";
 
-import {
-  uploadAudio
-} from "../middleware/upload.middleware.js";
+const router = express.Router();
 
-const router =
-  express.Router();
-
-router.use(
-  authenticate,
-  requireRole("candidate")
-);
-
-router.post(
-  "/",
-  createAttempt
-);
-
-router.get(
-  "/:attemptId",
-  getAttempt
-);
+router.post("/", createAttempt);
 
 router.post(
   "/:attemptId/accept-instructions",
@@ -48,11 +25,6 @@ router.post(
 router.post(
   "/:attemptId/system-check",
   systemCheck
-);
-
-router.get(
-  "/:attemptId/overview",
-  getOverview
 );
 
 router.post(
@@ -66,12 +38,6 @@ router.post(
 );
 
 router.post(
-  "/:attemptId/audio",
-  uploadAudio.single("audio"),
-  uploadSpokenAnswer
-);
-
-router.post(
   "/:attemptId/event",
   saveProctorEvent
 );
@@ -79,6 +45,11 @@ router.post(
 router.post(
   "/:attemptId/submit",
   submitAssessment
+);
+
+router.get(
+  "/:attemptId",
+  getAttempt
 );
 
 export default router;

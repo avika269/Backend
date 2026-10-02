@@ -1,5 +1,5 @@
-import Attempt from "../models/Attempt.js";
 import Assessment from "../models/Assessment.js";
+import Attempt from "../models/Attempt.js";
 
 const getAttemptWithAssessment =
   async (attemptId, candidateId) => {
@@ -842,4 +842,94 @@ export const saveProctorEvent =
       });
     }
   };
+
+  export const submitAssessment = async (req, res) => {
+  try {
+    const { attemptId } = req.params;
+
+    const attempt = await Attempt.findById(attemptId);
+
+    if (!attempt) {
+      return res.status(404).json({
+        success: false,
+        message: "Attempt not found"
+      });
+    }
+
+    if (attempt.status === "submitted") {
+      return res.status(400).json({
+        success: false,
+        message: "Assessment has already been submitted"
+      });
+    }
+
+    if (attempt.status === "expired") {
+      return res.status(400).json({
+        success: false,
+        message: "Assessment has expired"
+      });
+    }
+
+    let score = 0;
+    let totalScore = 0;
+
+    const assessment = await Assessment.findById(
+      attempt.assessmentId
+    );
+
+    if (!assessment) {
+      return res.status(404).json({
+        success: false,
+        message: "Assessment not found"
+      });
+    }
+
+    for (const question of assessment.questions) {
+      totalScore += question.points || 0;
+
+      const submittedAnswer = attempt.answers.find(
+        answer =>
+          answer.questionId.toString() ===
+          question._id.toString()
+      );
+
+      if (
+        question.type === "mcq" &&
+        submittedAnswer &&
+        submittedAnswer.answer === question.correctAnswer
+      ) {
+        score += question.points || 0;
+      }
+    }
+
+    attempt.status = "submitted";
+    attempt.score = score;
+    attempt.totalScore = totalScore;
+    attempt.submittedAt = new Date();
+
+    await attempt.save();
+
+    res.json({
+      success: true,
+      message: "Assessment submitted successfully",
+      result: {
+        attemptId: attempt._id,
+        score,
+        totalScore,
+        percentage:
+          totalScore > 0
+            ? Math.round((score / totalScore) * 100)
+            : 0,
+        submittedAt: attempt.submittedAt
+      }
+    });
+  } catch (error) {
+    console.error("Submit assessment error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Failed to submit assessment"
+    });
+  }
+};
   

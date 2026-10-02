@@ -25,16 +25,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["candidate", "recruiter"],
       default: "candidate"
-    },
-
-    resetTokenHash: {
-      type: String,
-      default: null
-    },
-
-    resetTokenExpiresAt: {
-      type: Date,
-      default: null
     }
   },
   {
@@ -42,4 +32,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export default User;

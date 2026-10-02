@@ -9,106 +9,33 @@ import attemptRoutes from "./routes/attempt.routes.js";
 
 dotenv.config();
 
-const app =
-  express();
+const app = express();
 
-const PORT =
-  process.env.PORT || 3500;
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  cors({
-    origin: "*"
-  })
-);
+app.get("/", (req, res) => {
+  res.json({
+    message: "SmartRecruit Backend Running"
+  });
+});
 
-app.use(
-  express.json({
-    limit: "5mb"
-  })
-);
-
-app.use(
-  express.urlencoded({
-    extended: true
-  })
-);
-
-app.get(
-  "/",
-  (req, res) => {
-    res.json({
-      success: true,
-      message:
-        "SmartRecruit Backend Running"
-    });
-  }
-);
-
-app.get(
-  "/health",
-  (req, res) => {
-    res.json({
-      success: true,
-      server:
-        "running",
-
-      database:
-        mongoose.connection.readyState ===
-        1
-          ? "connected"
-          : "disconnected"
-    });
-  }
-);
-
-app.use(
-  "/api/auth",
-  authRoutes
-);
-
-app.use(
-  "/api/assessments",
-  assessmentRoutes
-);
-
-app.use(
-  "/api/attempts",
-  attemptRoutes
-);
-
-app.use(
-  (req, res) => {
-    res.status(404).json({
-      success: false,
-      message:
-        `Route ${req.method} ${req.originalUrl} not found`
-    });
-  }
-);
+app.use("/api/auth", authRoutes);
+app.use("/api/assessment", assessmentRoutes);
+app.use("/api/attempts", attemptRoutes);
 
 mongoose
-  .connect(
-    process.env.MONGO_URI
-  )
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log(
-      "MongoDB connected successfully"
-    );
+    console.log("MongoDB connected successfully");
 
-    app.listen(
-      PORT,
-      () => {
-        console.log(
-          `Server running on http://localhost:${PORT}`
-        );
-      }
-    );
-  })
-  .catch(
-    error => {
-      console.error(
-        "MongoDB connection error:",
-        error.message
+    app.listen(process.env.PORT || 3500, () => {
+      console.log(
+        `Server running on http://localhost:${process.env.PORT || 3500}`
       );
-    }
-  );
+    });
+  })
+  .catch((error) => {
+    console.log("MongoDB connection error:", error.message);
+  });
