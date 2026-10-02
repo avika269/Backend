@@ -1,146 +1,233 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+
+import User from "./models/User.js";
 import Assessment from "./models/Assessment.js";
 
 dotenv.config();
 
-await mongoose.connect(
-  process.env.MONGO_URI
-);
+const seed = async () => {
+  try {
+    await mongoose.connect(
+      process.env.MONGO_URI
+    );
 
-await Assessment.deleteMany({});
+    console.log(
+      "MongoDB connected"
+    );
 
-const assessment =
-  await Assessment.create({
+    const recruiter =
+      await User.findOne({
+        email:
+          "recruiter@smartrecruit.com"
+      });
 
-    title:
-      "Frontend Developer Assessment",
+    let recruiterUser =
+      recruiter;
 
-    description:
-      "Review the instructions before starting your assessment. Ensure your setup is ready and uninterrupted.",
+    if (!recruiterUser) {
+      recruiterUser =
+        await User.create({
+          name:
+            "SmartRecruit Recruiter",
 
-    duration: 30,
+          email:
+            "recruiter@smartrecruit.com",
 
-    totalQuestions: 6,
+          password:
+            "$2b$12$abcdefghijklmnopqrstuu",
 
-    assessmentType:
-      "Technical Screening",
+          role:
+            "recruiter"
+        });
+    }
 
-    questions: [
+    await Assessment.deleteMany({});
 
-      {
-        questionNumber: 1,
+    const assessment =
+      await Assessment.create({
+        recruiterId:
+          recruiterUser._id,
 
-        type: "mcq",
+        title:
+          "Frontend Developer Assessment",
 
-        question:
-          "Which method is used to select an element by ID?",
+        description:
+          "Technical screening assessment for frontend developer candidates.",
 
-        options: [
-          "querySelector()",
-          "getElementById()",
-          "getElement()",
-          "selectById()"
-        ],
+        duration: 30,
 
-        correctAnswer:
-          "getElementById()",
+        totalQuestions: 6,
 
-        points: 1
-      },
+        assessmentType:
+          "Technical Screening",
 
+        role:
+          "Frontend Developer",
 
-      {
-        questionNumber: 2,
+        active: true,
 
-        type: "mcq",
+        questions: [
+          {
+            questionNumber: 1,
 
-        question:
-          "Which CSS property controls the space inside an element?",
+            type: "mcq",
 
-        options: [
-          "margin",
-          "padding",
-          "border",
-          "spacing"
-        ],
+            category:
+              "Technical Knowledge",
 
-        correctAnswer:
-          "padding",
+            question:
+              "Which JavaScript method is used to select an HTML element by its ID?",
 
-        points: 1
-      },
+            options: [
+              "getElementByClass()",
+              "getElementById()",
+              "queryElement()",
+              "selectById()"
+            ],
 
+            correctAnswer:
+              "getElementById()",
 
-      {
-        questionNumber: 3,
+            points: 1,
 
-        type: "mcq",
+            order: 1
+          },
 
-        question:
-          "Which keyword creates a block-scoped variable?",
+          {
+            questionNumber: 2,
 
-        options: [
-          "var",
-          "let",
-          "define",
-          "variable"
-        ],
+            type: "mcq",
 
-        correctAnswer:
-          "let",
+            category:
+              "Technical Knowledge",
 
-        points: 1
-      },
+            question:
+              "Which CSS property controls the space inside an element?",
 
+            options: [
+              "margin",
+              "padding",
+              "border",
+              "spacing"
+            ],
 
-      {
-        questionNumber: 4,
+            correctAnswer:
+              "padding",
 
-        type: "spoken",
+            points: 1,
 
-        question:
-          "Explain the difference between let, const and var.",
+            order: 2
+          },
 
-        points: 1
-      },
+          {
+            questionNumber: 3,
 
+            type: "mcq",
 
-      {
-        questionNumber: 5,
+            category:
+              "Technical Knowledge",
 
-        type: "spoken",
+            question:
+              "Which JavaScript keyword creates a block-scoped variable?",
 
-        question:
-          "Explain what happens when a user enters a URL into a browser.",
+            options: [
+              "var",
+              "let",
+              "define",
+              "variable"
+            ],
 
-        points: 1
-      },
+            correctAnswer:
+              "let",
 
+            points: 1,
 
-      {
-        questionNumber: 6,
+            order: 3
+          },
 
-        type: "coding",
+          {
+            questionNumber: 4,
 
-        question:
-          "Write a JavaScript function to reverse a string.",
+            type: "mcq",
 
-        points: 1
-      }
+            category:
+              "Technical Knowledge",
 
-    ]
+            question:
+              "Which CSS layout system is designed for one-dimensional layouts?",
 
-  });
+            options: [
+              "Flexbox",
+              "Grid",
+              "Float",
+              "Table"
+            ],
 
+            correctAnswer:
+              "Flexbox",
 
-console.log(
-  "Assessment created successfully"
-);
+            points: 1,
 
-console.log(
-  "Assessment ID:",
-  assessment._id.toString()
-);
+            order: 4
+          },
 
-process.exit();
+          {
+            questionNumber: 5,
+
+            type: "spoken",
+
+            category:
+              "Spoken Technical Response",
+
+            question:
+              "Explain the difference between let, const and var in JavaScript.",
+
+            points: 2,
+
+            timeLimit: 120,
+
+            order: 5
+          },
+
+          {
+            questionNumber: 6,
+
+            type: "coding",
+
+            category:
+              "Coding Challenge",
+
+            question:
+              "Write a JavaScript function to reverse a string.",
+
+            points: 5,
+
+            timeLimit: 900,
+
+            order: 6
+          }
+        ]
+      });
+
+    console.log(
+      "Assessment created:"
+    );
+
+    console.log(
+      assessment._id.toString()
+    );
+
+    console.log(
+      "Recruiter:",
+      recruiterUser.email
+    );
+
+    process.exit(0);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
+
+seed();
