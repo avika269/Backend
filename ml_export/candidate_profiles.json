@@ -1,0 +1,63 @@
+[
+  {
+    "candidateId": "candidate_unknown",
+    "profile": {
+      "name": "Test Candidate",
+      "skills": [
+        "JavaScript",
+        "React",
+        "Node.js",
+        "Express.js",
+        "MongoDB"
+      ],
+      "projects": [
+        {
+          "name": "SmartRecruit",
+          "description": "Online technical assessment platform",
+          "technologies": [
+            "React",
+            "Node.js",
+            "Express.js",
+            "MongoDB"
+          ],
+          "githubUrl": "https://github.com/testuser/smart-recruit"
+        }
+      ],
+      "education": [
+        {
+          "institution": "Test College",
+          "degree": "B.Tech",
+          "year": "2027"
+        }
+      ],
+      "experience": []
+    },
+    "github": {
+      "username": "testuser",
+      "profileUrl": "https://github.com/testuser",
+      "repositoryCount": 1,
+      "repositories": [
+        {
+          "name": "smart-recruit",
+          "description": "Smart recruitment assessment platform",
+          "language": "JavaScript",
+          "stars": 2,
+          "forks": 0,
+          "topics": [
+            "javascript",
+            "nodejs",
+            "mongodb"
+          ],
+          "technologies": [
+            "JavaScript",
+            "Node.js",
+            "Express.js",
+            "MongoDB"
+          ]
+        }
+      ]
+    },
+    "mlCategory": "Full Stack Developer",
+    "mlConfidence": 0.85
+  }
+]

@@ -1,24 +1,19 @@
 import jwt from "jsonwebtoken";
 
-export const authenticate = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   try {
-    const header = req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (!header) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: "Authorization token required"
+        message: "Authentication token required"
       });
     }
 
-    const token = header.startsWith("Bearer ")
-      ? header.split(" ")[1]
-      : header;
+    const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET
-    );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = decoded;
 
@@ -31,22 +26,4 @@ export const authenticate = (req, res, next) => {
   }
 };
 
-export const requireRole = (...roles) => {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Authentication required"
-      });
-    }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: "You do not have permission"
-      });
-    }
-
-    next();
-  };
-};
+export default authMiddleware;

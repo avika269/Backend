@@ -1,0 +1,152 @@
+[
+  {
+    "questionId": "6abd1db126d21feb3391a92e",
+    "assessmentId": "6abd1db126d21feb3391a92d",
+    "assessmentType": "Technical Screening",
+    "type": "mcq",
+    "question": "Which method is used to select an element by ID?",
+    "options": [
+      "querySelector()",
+      "getElementById()",
+      "getElement()",
+      "selectById()"
+    ],
+    "points": 1,
+    "timeLimit": 0
+  },
+  {
+    "questionId": "6abd1db126d21feb3391a92f",
+    "assessmentId": "6abd1db126d21feb3391a92d",
+    "assessmentType": "Technical Screening",
+    "type": "mcq",
+    "question": "Which CSS property controls the space inside an element?",
+    "options": [
+      "margin",
+      "padding",
+      "border",
+      "spacing"
+    ],
+    "points": 1,
+    "timeLimit": 0
+  },
+  {
+    "questionId": "6abd1db126d21feb3391a930",
+    "assessmentId": "6abd1db126d21feb3391a92d",
+    "assessmentType": "Technical Screening",
+    "type": "mcq",
+    "question": "Which keyword creates a block-scoped variable?",
+    "options": [
+      "var",
+      "let",
+      "define",
+      "variable"
+    ],
+    "points": 1,
+    "timeLimit": 0
+  },
+  {
+    "questionId": "6abd1db126d21feb3391a931",
+    "assessmentId": "6abd1db126d21feb3391a92d",
+    "assessmentType": "Technical Screening",
+    "type": "spoken",
+    "question": "Explain the difference between let, const and var.",
+    "options": [],
+    "points": 1,
+    "timeLimit": 0
+  },
+  {
+    "questionId": "6abd1db126d21feb3391a932",
+    "assessmentId": "6abd1db126d21feb3391a92d",
+    "assessmentType": "Technical Screening",
+    "type": "spoken",
+    "question": "Explain what happens when a user enters a URL into a browser.",
+    "options": [],
+    "points": 1,
+    "timeLimit": 0
+  },
+  {
+    "questionId": "6abd1db126d21feb3391a933",
+    "assessmentId": "6abd1db126d21feb3391a92d",
+    "assessmentType": "Technical Screening",
+    "type": "coding",
+    "question": "Write a JavaScript function to reverse a string.",
+    "options": [],
+    "points": 1,
+    "timeLimit": 0
+  },
+  {
+    "questionId": "6abfc52031c9cc306e715a7c",
+    "assessmentId": "6abfc52031c9cc306e715a7b",
+    "assessmentType": "Technical Screening",
+    "type": "mcq",
+    "question": "Which method selects an element by ID?",
+    "options": [
+      "getElementById()",
+      "querySelectorAll()",
+      "getElementsByClassName()",
+      "getElement()"
+    ],
+    "points": 5,
+    "timeLimit": 60
+  },
+  {
+    "questionId": "6abfc52031c9cc306e715a7d",
+    "assessmentId": "6abfc52031c9cc306e715a7b",
+    "assessmentType": "Technical Screening",
+    "type": "mcq",
+    "question": "Which CSS property controls space inside an element?",
+    "options": [
+      "margin",
+      "padding",
+      "border",
+      "spacing"
+    ],
+    "points": 5,
+    "timeLimit": 60
+  },
+  {
+    "questionId": "6abfc52031c9cc306e715a7e",
+    "assessmentId": "6abfc52031c9cc306e715a7b",
+    "assessmentType": "Technical Screening",
+    "type": "mcq",
+    "question": "Which JavaScript keyword is block scoped?",
+    "options": [
+      "var",
+      "let",
+      "function",
+      "global"
+    ],
+    "points": 5,
+    "timeLimit": 60
+  },
+  {
+    "questionId": "6abfc52031c9cc306e715a7f",
+    "assessmentId": "6abfc52031c9cc306e715a7b",
+    "assessmentType": "Technical Screening",
+    "type": "spoken",
+    "question": "Explain the difference between let, const and var.",
+    "options": [],
+    "points": 10,
+    "timeLimit": 120
+  },
+  {
+    "questionId": "6abfc52031c9cc306e715a80",
+    "assessmentId": "6abfc52031c9cc306e715a7b",
+    "assessmentType": "Technical Screening",
+    "type": "spoken",
+    "question": "What happens when a URL is entered into a browser?",
+    "options": [],
+    "points": 10,
+    "timeLimit": 120
+  },
+  {
+    "questionId": "6abfc52031c9cc306e715a81",
+    "assessmentId": "6abfc52031c9cc306e715a7b",
+    "assessmentType": "Technical Screening",
+    "type": "coding",
+    "question": "Write JavaScript code to reverse a string.",
+    "options": [],
+    "points": 15,
+    "timeLimit": 300
+  }
+]
