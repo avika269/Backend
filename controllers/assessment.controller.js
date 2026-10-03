@@ -146,6 +146,7 @@ export const createAttempt = async (req, res) => {
     }
 
     const attempt = await Attempt.create({
+       userId: req.user?.id || null,
       assessmentId,
       candidateName,
       candidateEmail,
@@ -159,6 +160,10 @@ export const createAttempt = async (req, res) => {
     });
 
   } catch (error) {
+     console.error(
+      "Create attempt error:",
+      error
+    );
     res.status(500).json({
       message: error.message
     });
