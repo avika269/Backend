@@ -13,7 +13,13 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+      "https://smart-recruit-ruby.vercel.app",
+      "http://smart-recruit-ruby.vercel.app"
+    ]
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
