@@ -4,8 +4,10 @@ const userSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      trim: true
+      trim: true,
+      required: function () {
+        return this.authProvider !== "google";
+      }
     },
 
     email: {
@@ -16,9 +18,49 @@ const userSchema = new mongoose.Schema(
       trim: true
     },
 
+    phone: {
+      type: String,
+      trim: true
+    },
+
     password: {
       type: String,
-      required: true
+      required: function () {
+        return this.authProvider !== "google";
+      }
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local"
+    },
+
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true
+    },
+
+    emailVerified: {
+      type: Boolean,
+      default: false
+    },
+
+    otp: {
+      type: String
+    },
+
+    otpExpiresAt: {
+      type: Date
+    },
+
+    resetOtp: {
+      type: String
+    },
+
+    resetOtpExpiresAt: {
+      type: Date
     },
 
     role: {

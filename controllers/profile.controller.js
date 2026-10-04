@@ -1,5 +1,5 @@
 import fs from "fs";
-import pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 
 import CandidateProfile from "../models/CandidateProfile.js";
 import User from "../models/User.js";
@@ -47,8 +47,12 @@ export const analyzeCandidateProfile = async (
       pdfBuffer
     );
 
+    const result = await parser.getText();
+
     const resumeText =
       pdfData.text || "";
+
+      await parser.destroy();
 
     const skills =
       extractSkills(resumeText);

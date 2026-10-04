@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/auth.routes.js";
 import assessmentRoutes from "./routes/assessment.routes.js";
 import attemptRoutes from "./routes/attempt.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
+import proctoringRoutes from "./routes/proctoring.routes.js";
 
 dotenv.config();
 
@@ -15,8 +17,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use("/uploads", express.static("uploads"));
+
 app.get("/", (req, res) => {
   res.json({
+    success: true,
     message: "SmartRecruit Backend Running"
   });
 });
@@ -24,6 +29,8 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/assessment", assessmentRoutes);
 app.use("/api/attempts", attemptRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/proctoring", proctoringRoutes);
 
 mongoose
   .connect(process.env.MONGO_URI)
@@ -37,5 +44,8 @@ mongoose
     });
   })
   .catch((error) => {
-    console.log("MongoDB connection error:", error.message);
+    console.log(
+      "MongoDB connection error:",
+      error.message
+    );
   });
