@@ -1,64 +1,12 @@
 import mongoose from "mongoose";
 
-const questionSchema = new mongoose.Schema(
-  {
-    questionNumber: {
-      type: Number,
-      required: true
-    },
-
-    type: {
-      type: String,
-      enum: ["mcq", "spoken", "coding"],
-      required: true
-    },
-
-    category: {
-      type: String,
-      default: "Technical Knowledge"
-    },
-
-    question: {
-      type: String,
-      required: true
-    },
-
-    options: {
-      type: [String],
-      default: []
-    },
-
-    correctAnswer: {
-      type: String,
-      default: null
-    },
-
-    points: {
-      type: Number,
-      default: 1
-    },
-
-    timeLimit: {
-      type: Number,
-      default: null
-    },
-
-    order: {
-      type: Number,
-      default: 0
-    }
-  },
-  {
-    _id: true
-  }
-);
-
 const assessmentSchema = new mongoose.Schema(
   {
-    recruiterId: {
+    drive: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: false
+      ref: "Drive",
+      required: true,
+      unique: true
     },
 
     title: {
@@ -66,39 +14,54 @@ const assessmentSchema = new mongoose.Schema(
       required: true
     },
 
-    description: {
+    durationMinutes: {
+      type: Number,
+      required: true,
+      min: 1
+    },
+
+    instructions: {
       type: String,
       default: ""
     },
 
-    duration: {
+    questions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Question"
+      }
+    ],
+
+    passingPercentage: {
       type: Number,
-      required: true
+      default: 50
     },
 
-    totalQuestions: {
-      type: Number,
-      default: 0
+    weights: {
+      coding: {
+        type: Number,
+        default: 40
+      },
+
+      technical: {
+        type: Number,
+        default: 30
+      },
+
+      communication: {
+        type: Number,
+        default: 20
+      },
+
+      other: {
+        type: Number,
+        default: 10
+      }
     },
 
-    assessmentType: {
-      type: String,
-      default: "Technical Screening"
-    },
-
-    role: {
-      type: String,
-      default: "Frontend Developer"
-    },
-
-    active: {
+    isPublished: {
       type: Boolean,
-      default: true
-    },
-
-    questions: {
-      type: [questionSchema],
-      default: []
+      default: false
     }
   },
   {
