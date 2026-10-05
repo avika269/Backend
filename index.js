@@ -19,7 +19,8 @@ app.use(cors({
       "http://localhost:3000",
       "http://smart-recruit-b5up.vercel.app/"
 
-    ]
+    ],
+     credentials: true
   })
 );
 app.use(express.json());
