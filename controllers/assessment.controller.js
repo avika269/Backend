@@ -2,6 +2,30 @@ import Assessment from "../models/Assessment.js";
 import Attempt from "../models/Attempt.js";
 import Drive from "../models/Drive.js";
 
+
+export const deleteAssessment = async (req, res) => {
+  try {
+    const assessment = await Assessment.findByIdAndDelete(req.params.id);
+
+    if (!assessment) {
+      return res.status(404).json({
+        success: false,
+        message: "Assessment not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Assessment deleted successfully"
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
 export const createAssessment = async (
   req,
   res
@@ -81,6 +105,37 @@ export const getAssessment = async (
     success: true,
     data: { assessment }
   });
+};
+
+export const updateAssessment = async (req, res) => {
+  try {
+    const assessment = await Assessment.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true
+      }
+    );
+
+    if (!assessment) {
+      return res.status(404).json({
+        success: false,
+        message: "Assessment not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Assessment updated successfully",
+      assessment
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
 };
 
 export const startAssessment = async (
