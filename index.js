@@ -17,7 +17,7 @@ app.use(cors({
   origin: [
      "http://localhost:5173",
       "http://localhost:3000",
-      "http://smart-recruit-b5up.vercel.app/"
+      "https://smart-recruit-b5up.vercel.app/"
 
     ],
      credentials: true
