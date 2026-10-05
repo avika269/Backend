@@ -15,8 +15,9 @@ const app = express();
 
 app.use(cors({
   origin: [
-      "https://smart-recruit-ruby.vercel.app",
-      "http://smart-recruit-ruby.vercel.app"
+     "http://localhost:5173",
+     "https://smart-recruit-five.vercel.app/"
+
     ]
   })
 );
