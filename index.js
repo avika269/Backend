@@ -20,6 +20,7 @@ app.use(cors({
       "https://smart-recruit-b5up.vercel.app/"
 
     ],
+    
      credentials: true
   })
 );
