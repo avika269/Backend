@@ -24,7 +24,9 @@ const generateToken = (user) => {
 };
 
 const generateOTP = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(
+    100000 + Math.random() * 900000
+  ).toString();
 };
 
 export const register = async (req, res) => {
@@ -36,7 +38,12 @@ export const register = async (req, res) => {
       confirmPassword
     } = req.body;
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (
+      !name ||
+      !email ||
+      !password ||
+      !confirmPassword
+    ) {
       return res.status(400).json({
         success: false,
         message: "All fields are required"
@@ -57,8 +64,10 @@ export const register = async (req, res) => {
       });
     }
 
+    const normalizedEmail = email.toLowerCase();
+
     const existingUser = await User.findOne({
-      email: email.toLowerCase()
+      email: normalizedEmail
     });
 
     if (existingUser) {
@@ -68,30 +77,50 @@ export const register = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      10
+    );
 
     const otp = generateOTP();
 
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
       authProvider: "local",
       emailVerified: false,
       otp,
-      otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000),
+      otpExpiresAt: new Date(
+        Date.now() + 10 * 60 * 1000
+      ),
       role: "candidate"
     });
-
-    await sendOTPEmail(user.email, otp);
 
     res.status(201).json({
       success: true,
       message: "Account created. OTP sent to your email.",
       userId: user._id
     });
+
+    sendOTPEmail(user.email, otp)
+      .then(() => {
+        console.log(
+          `OTP email sent successfully to ${user.email}`
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "OTP email error:",
+          error.message
+        );
+      });
+
   } catch (error) {
-    console.error("Register error:", error);
+    console.error(
+      "Register error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -103,6 +132,13 @@ export const register = async (req, res) => {
 export const verifyOTP = async (req, res) => {
   try {
     const { userId, otp } = req.body;
+
+    if (!userId || !otp) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and OTP are required"
+      });
+    }
 
     const user = await User.findById(userId);
 
@@ -149,8 +185,12 @@ export const verifyOTP = async (req, res) => {
         role: user.role
       }
     });
+
   } catch (error) {
-    console.error("Verify OTP error:", error);
+    console.error(
+      "Verify OTP error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -161,7 +201,10 @@ export const verifyOTP = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const {
+      email,
+      password
+    } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -220,8 +263,12 @@ export const login = async (req, res) => {
         role: user.role
       }
     });
+
   } catch (error) {
-    console.error("Login error:", error);
+    console.error(
+      "Login error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -261,18 +308,33 @@ export const forgotPassword = async (req, res) => {
 
     await user.save();
 
-    await sendOTPEmail(
+    sendOTPEmail(
       user.email,
       otp,
       "reset"
-    );
+    )
+      .then(() => {
+        console.log(
+          `Password reset OTP sent successfully to ${user.email}`
+        );
+      })
+      .catch((error) => {
+        console.error(
+          "Password reset email error:",
+          error.message
+        );
+      });
 
     res.json({
       success: true,
       message: "Password reset OTP sent"
     });
+
   } catch (error) {
-    console.error("Forgot password error:", error);
+    console.error(
+      "Forgot password error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -354,8 +416,12 @@ export const resetPassword = async (req, res) => {
       success: true,
       message: "Password reset successfully"
     });
+
   } catch (error) {
-    console.error("Reset password error:", error);
+    console.error(
+      "Reset password error:",
+      error
+    );
 
     res.status(500).json({
       success: false,
@@ -433,8 +499,12 @@ export const googleLogin = async (req, res) => {
         role: user.role
       }
     });
+
   } catch (error) {
-    console.error("Google login error:", error);
+    console.error(
+      "Google login error:",
+      error
+    );
 
     res.status(401).json({
       success: false,
@@ -445,7 +515,9 @@ export const googleLogin = async (req, res) => {
 
 export const getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select(
+    const user = await User.findById(
+      req.user.id
+    ).select(
       "-password -otp -resetOtp"
     );
 
@@ -460,7 +532,13 @@ export const getMe = async (req, res) => {
       success: true,
       user
     });
+
   } catch (error) {
+    console.error(
+      "Get me error:",
+      error
+    );
+
     res.status(500).json({
       success: false,
       message: "Failed to get user"
