@@ -15,13 +15,19 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true
     },
-
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-      select: false
-    },
+password: { 
+  type: String, minlength: 6, select: false
+ },
+   authProvider: { 
+    type: String, enum: ["local", "google"], default: "local" },
+   googleId: String,
+   emailVerified: { 
+    type: Boolean, default: false 
+  },
+   otp: String,
+   otpExpiresAt: Date,
+   resetOtp: String,
+   resetOtpExpiresAt: Date,
 
     role: {
       type: String,
