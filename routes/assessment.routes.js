@@ -3,18 +3,49 @@ import express from "express";
 import {
   createAssessment,
   getAssessment,
-  updateAssessment,
-  deleteAssessment
+  startAssessment,
+  acceptInstructions,
+  completeSystemCheck
 } from "../controllers/assessment.controller.js";
 
-const router = express.Router();
+import authMiddleware from "../middleware/auth.middleware.js";
+import roleMiddleware from "../middleware/role.middleware.js";
 
-router.post("/", createAssessment);
+const router =
+  express.Router();
 
-router.get("/", getAssessment);
+router.post(
+  "/",
+  authMiddleware,
+  roleMiddleware(
+    "recruiter",
+    "admin"
+  ),
+  createAssessment
+);
 
-router.put("/:assessmentId", updateAssessment);
+router.get(
+  "/:id",
+  authMiddleware,
+  getAssessment
+);
 
-router.delete("/:assessmentId", deleteAssessment);
+router.post(
+  "/:id/start",
+  authMiddleware,
+  startAssessment
+);
+
+router.post(
+  "/:attemptId/accept-instructions",
+  authMiddleware,
+  acceptInstructions
+);
+
+router.post(
+  "/:attemptId/system-check",
+  authMiddleware,
+  completeSystemCheck
+);
 
 export default router;
