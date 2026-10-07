@@ -1,4 +1,11 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 import nodemailer from "nodemailer";
+
+console.log("EMAIL_USER:", process.env.EMAIL_USER);
+console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -8,7 +15,11 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-export const sendOTPEmail = async (email, otp, type = "verification") => {
+export const sendOTPEmail = async (
+  email,
+  otp,
+  type = "verification"
+) => {
   const subject =
     type === "reset"
       ? "SmartRecruit Password Reset OTP"
@@ -19,10 +30,17 @@ export const sendOTPEmail = async (email, otp, type = "verification") => {
       ? `Your SmartRecruit password reset OTP is ${otp}. It is valid for 10 minutes.`
       : `Your SmartRecruit verification OTP is ${otp}. It is valid for 10 minutes.`;
 
-  await transporter.sendMail({
+  const info = await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
     subject,
     text: message
   });
+
+  console.log("EMAIL SENT");
+  console.log("Message ID:", info.messageId);
+  console.log("Accepted:", info.accepted);
+  console.log("Rejected:", info.rejected);
+
+  return info;
 };

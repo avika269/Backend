@@ -84,6 +84,8 @@ export const register = async (req, res) => {
 
     const otp = generateOTP();
 
+    console.log("REGISTRATION OTP:", otp);
+
     const user = await User.create({
       name,
       email: normalizedEmail,
@@ -131,21 +133,30 @@ export const register = async (req, res) => {
 
 export const verifyOTP = async (req, res) => {
   try {
-    const { userId, otp } = req.body;
+    const { email, otp } = req.body;
 
-    if (!userId || !otp) {
+    if (!email || !otp) {
       return res.status(400).json({
         success: false,
-        message: "User ID and OTP are required"
+        message: "Email and OTP are required"
       });
     }
 
-    const user = await User.findById(userId);
+    const user = await User.findOne({
+      email: email.toLowerCase()
+    });
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found"
+      });
+    }
+
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already verified"
       });
     }
 
@@ -162,7 +173,7 @@ export const verifyOTP = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "OTP has expired"
+        message: "OTP expired"
       });
     }
 
@@ -172,25 +183,12 @@ export const verifyOTP = async (req, res) => {
 
     await user.save();
 
-    const token = generateToken(user);
-
     res.json({
       success: true,
-      message: "Email verified successfully",
-      token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      message: "Email verified successfully"
     });
-
   } catch (error) {
-    console.error(
-      "Verify OTP error:",
-      error
-    );
+    console.error("Verify OTP error:", error);
 
     res.status(500).json({
       success: false,
@@ -215,7 +213,7 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({
       email: email.toLowerCase()
-    });
+    }).select("+password");
 
     if (!user) {
       return res.status(401).json({
@@ -237,6 +235,13 @@ export const login = async (req, res) => {
         message: "Please verify your email first"
       });
     }
+
+    if (!user.password) {
+  return res.status(400).json({
+    success: false,
+    message: "This account does not have a password. Please login using Google."
+  });
+}
 
     const passwordMatch = await bcrypt.compare(
       password,
@@ -300,6 +305,7 @@ export const forgotPassword = async (req, res) => {
     }
 
     const otp = generateOTP();
+    console.log("PASSWORD RESET OTP:", otp);
 
     user.resetOtp = otp;
     user.resetOtpExpiresAt = new Date(
@@ -538,6 +544,8 @@ export const getMe = async (req, res) => {
       "Get me error:",
       error
     );
+     console.error("Error message:", error.message);
+    console.error("req.user:", req.user);
 
     res.status(500).json({
       success: false,

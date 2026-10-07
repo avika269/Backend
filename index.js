@@ -46,6 +46,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+console.log("DRIVE ROUTES LOADED");
 app.use("/api/drives", driveRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/assessment", assessmentRoutes);

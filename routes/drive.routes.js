@@ -18,7 +18,14 @@ const router =
 router.get(
   "/",
   authMiddleware,
-  getDrives
+  (req, res) => {
+      console.log("GET /api/drives HIT");
+    res.json({
+      success: true,
+      message: "Drive route reached",
+      user: req.user
+    });
+  }
 );
 
 router.get(
