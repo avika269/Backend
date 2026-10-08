@@ -1,231 +1,466 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import bcrypt from "bcryptjs";
 
 import User from "./models/User.js";
+import Drive from "./models/Drive.js";
+import Question from "./models/Question.js";
 import Assessment from "./models/Assessment.js";
 
 dotenv.config();
 
 const seed = async () => {
   try {
-    await mongoose.connect(
-      process.env.MONGO_URI
-    );
+    await mongoose.connect(process.env.MONGO_URI);
+
+    console.log("MongoDB connected");
+
+    const recruiterPassword =
+      await bcrypt.hash("Recruiter@123", 10);
+
+    const recruiterUser =
+      await User.findOneAndUpdate(
+        {
+          email: "recruiter@smartrecruit.com"
+        },
+        {
+          name: "SmartRecruit Recruiter",
+          email: "recruiter@smartrecruit.com",
+          password: recruiterPassword,
+          authProvider: "local",
+          emailVerified: true,
+          role: "recruiter",
+          isActive: true
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true
+        }
+      );
 
     console.log(
-      "MongoDB connected"
+      "Recruiter ready:",
+      recruiterUser.email
     );
 
-    const recruiter =
-      await User.findOne({
-        email:
-          "recruiter@smartrecruit.com"
-      });
+    const candidatePassword =
+      await bcrypt.hash("Candidate@123", 10);
 
-    let recruiterUser =
-      recruiter;
+    const candidateUser =
+      await User.findOneAndUpdate(
+        {
+          email: "candidate@smartrecruit.com"
+        },
+        {
+          name: "Priya Tiwari",
+          email: "candidate@smartrecruit.com",
+          password: candidatePassword,
+          authProvider: "local",
+          emailVerified: true,
+          role: "candidate",
+          phone: "9876543210",
+          isActive: true
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true
+        }
+      );
 
-    if (!recruiterUser) {
-      recruiterUser =
-        await User.create({
-          name:
-            "SmartRecruit Recruiter",
-
-          email:
-            "recruiter@smartrecruit.com",
-
-          password:
-            "$2b$12$abcdefghijklmnopqrstuu",
-
-          role:
-            "recruiter"
-        });
-    }
+    console.log(
+      "Candidate ready:",
+      candidateUser.email
+    );
 
     await Assessment.deleteMany({});
+    await Drive.deleteMany({});
+    await Question.deleteMany({});
 
-    const assessment =
-      await Assessment.create({
-        recruiterId:
-          recruiterUser._id,
+    console.log("Old assessment data removed");
 
+    const startDate = new Date();
+
+    const endDate = new Date(
+      Date.now() +
+        30 * 24 * 60 * 60 * 1000
+    );
+
+    const drive =
+      await Drive.create({
         title:
-          "Frontend Developer Assessment",
+          "Frontend Developer Hiring Drive",
 
-        description:
-          "Technical screening assessment for frontend developer candidates.",
-
-        duration: 30,
-
-        totalQuestions: 6,
-
-        assessmentType:
-          "Technical Screening",
+        company:
+          "SmartRecruit",
 
         role:
           "Frontend Developer",
 
-        active: true,
+        description:
+          "Hiring drive for frontend developers with a technical screening assessment.",
 
-        questions: [
-          {
-            questionNumber: 1,
+        location:
+          "Remote",
 
-            type: "mcq",
+        startDate,
 
-            category:
-              "Technical Knowledge",
+        endDate,
 
-            question:
-              "Which JavaScript method is used to select an HTML element by its ID?",
+        createdBy:
+          recruiterUser._id,
 
-            options: [
-              "getElementByClass()",
-              "getElementById()",
-              "queryElement()",
-              "selectById()"
-            ],
+        invitedCandidates: [
+          candidateUser._id
+        ],
 
-            correctAnswer:
-              "getElementById()",
-
-            points: 1,
-
-            order: 1
-          },
-
-          {
-            questionNumber: 2,
-
-            type: "mcq",
-
-            category:
-              "Technical Knowledge",
-
-            question:
-              "Which CSS property controls the space inside an element?",
-
-            options: [
-              "margin",
-              "padding",
-              "border",
-              "spacing"
-            ],
-
-            correctAnswer:
-              "padding",
-
-            points: 1,
-
-            order: 2
-          },
-
-          {
-            questionNumber: 3,
-
-            type: "mcq",
-
-            category:
-              "Technical Knowledge",
-
-            question:
-              "Which JavaScript keyword creates a block-scoped variable?",
-
-            options: [
-              "var",
-              "let",
-              "define",
-              "variable"
-            ],
-
-            correctAnswer:
-              "let",
-
-            points: 1,
-
-            order: 3
-          },
-
-          {
-            questionNumber: 4,
-
-            type: "mcq",
-
-            category:
-              "Technical Knowledge",
-
-            question:
-              "Which CSS layout system is designed for one-dimensional layouts?",
-
-            options: [
-              "Flexbox",
-              "Grid",
-              "Float",
-              "Table"
-            ],
-
-            correctAnswer:
-              "Flexbox",
-
-            points: 1,
-
-            order: 4
-          },
-
-          {
-            questionNumber: 5,
-
-            type: "spoken",
-
-            category:
-              "Spoken Technical Response",
-
-            question:
-              "Explain the difference between let, const and var in JavaScript.",
-
-            points: 2,
-
-            timeLimit: 120,
-
-            order: 5
-          },
-
-          {
-            questionNumber: 6,
-
-            type: "coding",
-
-            category:
-              "Coding Challenge",
-
-            question:
-              "Write a JavaScript function to reverse a string.",
-
-            points: 5,
-
-            timeLimit: 900,
-
-            order: 6
-          }
-        ]
+        isActive: true
       });
 
     console.log(
-      "Assessment created:"
+      "Drive created:",
+      drive._id.toString()
     );
 
+    const questions =
+      await Question.create([
+        {
+          question:
+            "Which JavaScript method is used to select an HTML element by its ID?",
+
+          type:
+            "mcq",
+
+          options: [
+            "getElementByClass()",
+            "getElementById()",
+            "queryElement()",
+            "selectById()"
+          ],
+
+          correctAnswer:
+            "getElementById()",
+
+          points: 1,
+
+          difficulty:
+            "easy",
+
+          tags: [
+            "javascript",
+            "dom"
+          ],
+
+          createdBy:
+            recruiterUser._id
+        },
+
+        {
+          question:
+            "Which CSS property controls the space inside an element?",
+
+          type:
+            "mcq",
+
+          options: [
+            "margin",
+            "padding",
+            "border",
+            "spacing"
+          ],
+
+          correctAnswer:
+            "padding",
+
+          points: 1,
+
+          difficulty:
+            "easy",
+
+          tags: [
+            "css",
+            "box-model"
+          ],
+
+          createdBy:
+            recruiterUser._id
+        },
+
+        {
+          question:
+            "Which JavaScript keyword creates a block-scoped variable?",
+
+          type:
+            "mcq",
+
+          options: [
+            "var",
+            "let",
+            "define",
+            "variable"
+          ],
+
+          correctAnswer:
+            "let",
+
+          points: 1,
+
+          difficulty:
+            "easy",
+
+          tags: [
+            "javascript",
+            "variables"
+          ],
+
+          createdBy:
+            recruiterUser._id
+        },
+
+        {
+          question:
+            "Which CSS layout system is designed for one-dimensional layouts?",
+
+          type:
+            "mcq",
+
+          options: [
+            "Flexbox",
+            "Grid",
+            "Float",
+            "Table"
+          ],
+
+          correctAnswer:
+            "Flexbox",
+
+          points: 1,
+
+          difficulty:
+            "easy",
+
+          tags: [
+            "css",
+            "flexbox",
+            "layout"
+          ],
+
+          createdBy:
+            recruiterUser._id
+        },
+
+        {
+          question:
+            "Explain the difference between let, const and var in JavaScript.",
+
+          type:
+            "spoken",
+
+          expectedAnswer:
+            "let and const are block scoped while var is function scoped. let can be reassigned, const cannot be reassigned, and var has function scope with different hoisting behavior.",
+
+          rubric: [
+            {
+              criterion:
+                "Scope",
+
+              points: 1,
+
+              description:
+                "Explains the difference between block scope and function scope."
+            },
+
+            {
+              criterion:
+                "Reassignment",
+
+              points: 1,
+
+              description:
+                "Explains reassignment differences between let, const and var."
+            }
+          ],
+
+          points: 2,
+
+          difficulty:
+            "medium",
+
+          tags: [
+            "javascript",
+            "spoken",
+            "communication"
+          ],
+
+          createdBy:
+            recruiterUser._id
+        },
+
+        {
+          question:
+            "Write a JavaScript function to reverse a string.",
+
+          type:
+            "coding",
+
+          starterCode:
+            `function reverseString(str) {
+  // Write your solution here
+}`,
+
+          testCases: [
+            {
+              input:
+                "hello",
+
+              expectedOutput:
+                "olleh",
+
+              isHidden:
+                false
+            },
+
+            {
+              input:
+                "SmartRecruit",
+
+              expectedOutput:
+                "tiurceRtramS",
+
+              isHidden:
+                true
+            },
+
+            {
+              input:
+                "frontend",
+
+              expectedOutput:
+                "dnetnorf",
+
+              isHidden:
+                true
+            }
+          ],
+
+          points: 5,
+
+          difficulty:
+            "easy",
+
+          tags: [
+            "javascript",
+            "coding",
+            "strings"
+          ],
+
+          createdBy:
+            recruiterUser._id
+        }
+      ]);
+
     console.log(
+      `${questions.length} questions created`
+    );
+
+    const assessment =
+      await Assessment.create({
+        drive:
+          drive._id,
+
+        title:
+          "Frontend Developer Assessment",
+
+        durationMinutes:
+          30,
+
+        instructions:
+          "Complete the assessment within 30 minutes. Make sure your camera and microphone are working before you begin. Read each question carefully and submit your answers before the timer expires.",
+
+        questions:
+          questions.map(
+            (question) =>
+              question._id
+          ),
+
+        passingPercentage:
+          50,
+
+        weights: {
+          coding: 40,
+          technical: 30,
+          communication: 20,
+          other: 10
+        },
+
+        isPublished:
+          true
+      });
+
+    console.log(
+      "Assessment created:",
+      assessment._id.toString()
+    );
+
+    console.log("\n========================================");
+    console.log("SEED COMPLETED");
+    console.log("========================================");
+
+    console.log("\nRecruiter login:");
+    console.log(
+      "Email: recruiter@smartrecruit.com"
+    );
+    console.log(
+      "Password: Recruiter@123"
+    );
+
+    console.log("\nCandidate login:");
+    console.log(
+      "Email: candidate@smartrecruit.com"
+    );
+    console.log(
+      "Password: Candidate@123"
+    );
+
+    console.log("\nAssessment:");
+    console.log(
+      "ID:",
       assessment._id.toString()
     );
 
     console.log(
-      "Recruiter:",
-      recruiterUser.email
+      "Title:",
+      assessment.title
     );
+
+    console.log(
+      "Duration:",
+      assessment.durationMinutes,
+      "minutes"
+    );
+
+    console.log(
+      "Questions:",
+      questions.length
+    );
+
+    console.log(
+      "Drive ID:",
+      drive._id.toString()
+    );
+
+    console.log("\n========================================");
+
+    await mongoose.disconnect();
 
     process.exit(0);
   } catch (error) {
+    console.error("\nSeed failed:");
     console.error(error);
+
+    await mongoose.disconnect();
+
     process.exit(1);
   }
 };

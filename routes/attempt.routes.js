@@ -5,6 +5,7 @@ import {
   acceptInstructions,
   systemCheck,
   startAssessment,
+  getOverview,
   saveAnswer,
   saveProctorEvent,
   submitAssessment,
@@ -21,6 +22,12 @@ router.post(
   createAttempt
 );
 
+router.get(
+  "/:attemptId",
+  authMiddleware,
+  getAttempt
+);
+
 router.post(
   "/:attemptId/accept-instructions",
   authMiddleware,
@@ -31,6 +38,12 @@ router.post(
   "/:attemptId/system-check",
   authMiddleware,
   systemCheck
+);
+
+router.get(
+  "/:attemptId/overview",
+  authMiddleware,
+  getOverview
 );
 
 router.post(
@@ -55,12 +68,6 @@ router.post(
   "/:attemptId/submit",
   authMiddleware,
   submitAssessment
-);
-
-router.get(
-  "/:attemptId",
-  authMiddleware,
-  getAttempt
 );
 
 export default router;

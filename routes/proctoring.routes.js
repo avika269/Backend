@@ -1,17 +1,31 @@
 import express from "express";
 
 import {
-  createProctoringEvent,
-  getProctoringEvaluation,
-  generateProctoringEvaluation
+  startProctoringSession,
+  analyzeProctoring,
+  endProctoringSession
 } from "../controllers/proctoring.controller.js";
+
+import authMiddleware from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/:attemptId/event", createProctoringEvent);
+router.post(
+  "/start",
+  authMiddleware,
+  startProctoringSession
+);
 
-router.get("/:attemptId", getProctoringEvaluation);
+router.post(
+  "/analyze-frame",
+  authMiddleware,
+  analyzeProctoring
+);
 
-router.post("/:attemptId/evaluate", generateProctoringEvaluation);
+router.post(
+  "/end",
+  authMiddleware,
+  endProctoringSession
+);
 
 export default router;

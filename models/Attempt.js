@@ -18,6 +18,9 @@ const attemptSchema = new mongoose.Schema(
       type: String,
       enum: [
         "created",
+        "instructions",
+        "system-check",
+        "overview",
         "started",
         "submitted",
         "evaluating",
@@ -30,6 +33,11 @@ const attemptSchema = new mongoose.Schema(
     instructionsAccepted: {
       type: Boolean,
       default: false
+    },
+
+    instructionsAcceptedAt: {
+      type: Date,
+      default: null
     },
 
     systemCheckCompleted: {
@@ -48,6 +56,16 @@ const attemptSchema = new mongoose.Schema(
     },
 
     fullscreenEnabled: {
+      type: Boolean,
+      default: false
+    },
+
+    browserReady: {
+      type: Boolean,
+      default: false
+    },
+
+    connectionStable: {
       type: Boolean,
       default: false
     },
@@ -85,7 +103,13 @@ const attemptSchema = new mongoose.Schema(
     events: [
       {
         type: {
-          type: String
+          type: String,
+          required: true
+        },
+
+        message: {
+          type: String,
+          default: ""
         },
 
         metadata: {
