@@ -105,18 +105,16 @@ export const register = async (req, res) => {
       userId: user._id
     });
 
-    sendOTPEmail(user.email, otp)
-      .then(() => {
-        console.log(
-          `OTP email sent successfully to ${user.email}`
-        );
-      })
-      .catch((error) => {
-        console.error(
-          "OTP email error:",
-          error.message
-        );
-      });
+    try {
+  const info = await sendOTPEmail(user.email, otp);
+
+  console.log("OTP EMAIL SENT SUCCESSFULLY");
+  console.log("Message ID:", info.messageId);
+  console.log("Accepted:", info.accepted);
+  console.log("Rejected:", info.rejected);
+} catch (error) {
+  console.error("OTP EMAIL ERROR:", error);
+}
 
   } catch (error) {
     console.error(
