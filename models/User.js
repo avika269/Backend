@@ -36,6 +36,7 @@ password: {
         "recruiter",
         "admin"
       ],
+      
       default: "candidate"
     },
 
