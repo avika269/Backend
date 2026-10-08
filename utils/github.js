@@ -111,15 +111,25 @@ export const getGithubUsername = (githubUrl) => {
 };
 
 export const getGithubRepositories = async (username) => {
-  const response = await fetch(
-    `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`,
-    {
-      headers: getHeaders()
-    }
-  );
+  const url = `https://api.github.com/users/${username}/repos?per_page=100&sort=updated`;
+
+  console.log("GitHub username:", username);
+  console.log("GitHub URL:", url);
+  console.log("GITHUB_TOKEN exists:", !!process.env.GITHUB_TOKEN);
+
+  const response = await fetch(url, {
+    headers: getHeaders()
+  });
 
   if (!response.ok) {
-    throw new Error("Unable to fetch GitHub repositories");
+    const errorBody = await response.text();
+
+    console.error("GitHub API status:", response.status);
+    console.error("GitHub API response:", errorBody);
+
+    throw new Error(
+      `GitHub API error: ${response.status} ${response.statusText}`
+    );
   }
 
   return response.json();
