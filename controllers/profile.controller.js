@@ -80,6 +80,20 @@ export const analyzeCandidateProfile = async (req, res) => {
 
     if (email) {
       user.email = email.toLowerCase();
+
+       const existingUser = await User.findOne({
+    email: normalizedEmail,
+    _id: { $ne: user._id }
+  });
+
+  if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      message: "Email is already registered with another account"
+    });
+  }
+
+  user.email = normalizedEmail;
     }
 
     if (phone) {

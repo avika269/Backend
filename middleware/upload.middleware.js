@@ -2,17 +2,28 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const uploadDirectory = "uploads/audio";
+const audioDirectory = "uploads/audio";
+const resumeDirectory = "uploads/resumes";
 
-if (!fs.existsSync(uploadDirectory)) {
-  fs.mkdirSync(uploadDirectory, {
+if (!fs.existsSync(audioDirectory)) {
+  fs.mkdirSync(audioDirectory, {
+    recursive: true
+  });
+}
+
+if (!fs.existsSync(resumeDirectory)) {
+  fs.mkdirSync(resumeDirectory, {
     recursive: true
   });
 }
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDirectory);
+    if (file.fieldname === "resume") {
+      cb(null, resumeDirectory);
+    } else {
+      cb(null, audioDirectory);
+    }
   },
 
   filename: (req, file, cb) => {
@@ -26,7 +37,7 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
+  const audioTypes = [
     "audio/mpeg",
     "audio/mp3",
     "audio/wav",
@@ -35,7 +46,27 @@ const fileFilter = (req, file, cb) => {
     "audio/mp4"
   ];
 
-  if (allowedTypes.includes(file.mimetype)) {
+  if (file.fieldname === "resume") {
+    const extension = path.extname(file.originalname).toLowerCase();
+
+    const allowedResumeExtensions = [
+      ".pdf",
+      ".docx"
+    ];
+
+    if (allowedResumeExtensions.includes(extension)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error("Only PDF and DOCX files are allowed for resumes"),
+        false
+      );
+    }
+
+    return;
+  }
+
+  if (audioTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(new Error("Only audio files are allowed"), false);
