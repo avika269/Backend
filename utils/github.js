@@ -1,3 +1,7 @@
+const MAX_REPOSITORIES = 10;
+const MAX_FILES_PER_REPOSITORY = 10;
+const MAX_FILE_CONTENT = 10000;
+
 const ignoredFiles = [
   ".env",
   ".env.local",
@@ -240,7 +244,7 @@ export const analyzeGithub = async (githubUrl) => {
 
   const finalRepositories = [];
 
-  for (const repository of repositories.slice(0, 20)) {
+  for (const repository of repositories.slice(0, MAX_REPOSITORIES)) {
     if (repository.fork) {
       continue;
     }
@@ -280,7 +284,7 @@ export const analyzeGithub = async (githubUrl) => {
           path.endsWith("package.json")
         );
       })
-      .slice(0, 25);
+      .slice(0,  MAX_FILES_PER_REPOSITORY);
 
     const importantFiles = [];
 
@@ -298,7 +302,7 @@ export const analyzeGithub = async (githubUrl) => {
       importantFiles.push({
         path: file.path,
         type: "source",
-        content: content.slice(0, 15000)
+        content: content.slice(0, MAX_FILE_CONTENT)
       });
     }
 

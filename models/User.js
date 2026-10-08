@@ -44,6 +44,10 @@ password: {
       type: String,
       default: ""
     },
+    collegeName: {
+  type: String,
+  trim: true
+},
 
     isActive: {
       type: Boolean,
