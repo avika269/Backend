@@ -78,24 +78,6 @@ export const analyzeCandidateProfile = async (req, res) => {
       user.name = name;
     }
 
-    if (email) {
-      user.email = email.toLowerCase();
-
-       const existingUser = await User.findOne({
-    email: normalizedEmail,
-    _id: { $ne: user._id }
-  });
-
-  if (existingUser) {
-    return res.status(409).json({
-      success: false,
-      message: "Email is already registered with another account"
-    });
-  }
-
-  user.email = normalizedEmail;
-    }
-
     if (phone) {
       user.phone = phone;
     }
@@ -287,10 +269,6 @@ export const updateCandidateProfile = async (req, res) => {
       user.name = name;
     }
 
-    if (email) {
-      user.email = email.toLowerCase();
-    }
-
     if (phone) {
       user.phone = phone;
     }
@@ -302,16 +280,22 @@ export const updateCandidateProfile = async (req, res) => {
     await user.save();
 
     if (githubUrl) {
-      profile.github = await analyzeGithub(githubUrl);
+      profile.github =
+        await analyzeGithub(githubUrl);
     }
 
-    let resumeText = profile.rawResumeText || "";
-    let skills = profile.profile?.skills || [];
+    let resumeText =
+      profile.rawResumeText || "";
+
+    let skills =
+      profile.profile?.skills || [];
 
     if (req.file) {
-      resumeText = await extractResumeText(req.file);
+      resumeText =
+        await extractResumeText(req.file);
 
-      skills = extractSkills(resumeText);
+      skills =
+        extractSkills(resumeText);
 
       profile.resume = {
         fileName: req.file.originalname,
@@ -319,44 +303,61 @@ export const updateCandidateProfile = async (req, res) => {
         uploadedAt: new Date()
       };
 
-      profile.rawResumeText = resumeText;
+      profile.rawResumeText =
+        resumeText;
     }
 
-    profile.profile.name = user.name;
-    profile.profile.email = user.email;
-    profile.profile.phone = user.phone || "";
+    profile.profile.name =
+      user.name;
+
+    profile.profile.email =
+      user.email;
+
+    profile.profile.phone =
+      user.phone || "";
+
     profile.profile.collegeName =
       user.collegeName || "";
-    profile.profile.skills = skills;
+
+    profile.profile.skills =
+      skills;
 
     profile.candidateProfileJson = {
       candidate: {
         name: user.name,
         email: user.email,
         phone: user.phone || "",
-        collegeName: user.collegeName || ""
+        collegeName:
+          user.collegeName || ""
       },
 
       resume: {
-        fileName: profile.resume?.fileName || ""
+        fileName:
+          profile.resume?.fileName || ""
       },
 
-      github: profile.github,
+      github:
+        profile.github,
 
       skills,
 
-      projects: profile.profile.projects || [],
+      projects:
+        profile.profile.projects || [],
 
-      education: profile.profile.education || [],
+      education:
+        profile.profile.education || [],
 
-      experience: profile.profile.experience || []
+      experience:
+        profile.profile.experience || []
     };
 
     await profile.save();
 
     return res.json({
       success: true,
-      message: "Candidate profile updated successfully",
+      message:
+        "Candidate profile updated successfully",
+
       candidateProfile:
         profile.candidateProfileJson
     });
@@ -369,13 +370,17 @@ export const updateCandidateProfile = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update candidate profile",
+      message:
+        "Failed to update candidate profile",
       error: error.message
     });
   }
 };
 
-export const deleteCandidateProfile = async (req, res) => {
+export const deleteCandidateProfile = async (
+  req,
+  res
+) => {
   try {
     const profile =
       await CandidateProfile.findOneAndDelete({
@@ -385,13 +390,15 @@ export const deleteCandidateProfile = async (req, res) => {
     if (!profile) {
       return res.status(404).json({
         success: false,
-        message: "Candidate profile not found"
+        message:
+          "Candidate profile not found"
       });
     }
 
     return res.json({
       success: true,
-      message: "Candidate profile deleted successfully"
+      message:
+        "Candidate profile deleted successfully"
     });
 
   } catch (error) {
@@ -402,7 +409,8 @@ export const deleteCandidateProfile = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to delete candidate profile",
+      message:
+        "Failed to delete candidate profile",
       error: error.message
     });
   }
