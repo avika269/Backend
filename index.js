@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 
+
 import authRoutes from "./routes/auth.routes.js";
 import driveRoutes from "./routes/drive.routes.js";
 import questionRoutes from "./routes/question.routes.js";
@@ -12,6 +13,7 @@ import evaluationRoutes from "./routes/evaluation.routes.js";
 import attemptRoutes from "./routes/attempt.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import proctoringRoutes from "./routes/proctoring.routes.js";
+import mlRoutes from "./routes/ml.routes.js";
 
 import {
   notFoundMiddleware,
@@ -55,6 +57,7 @@ app.use("/api/evaluations", evaluationRoutes);
 app.use("/api/attempts", attemptRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/proctoring", proctoringRoutes);
+app.use("/api/ml", mlRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
