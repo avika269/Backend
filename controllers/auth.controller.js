@@ -80,6 +80,7 @@ export const register = async (req, res) => {
         );
 
         const otp = generateOTP();
+        console.log("REGISTRATION OTP:", otp);
 
         const user = await User.create({
             name,
