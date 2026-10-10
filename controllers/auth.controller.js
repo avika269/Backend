@@ -213,7 +213,7 @@ export const verifyOTP = async (req, res) => {
     }
 };
 
-// LOGIN
+
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -361,7 +361,7 @@ export const forgotPassword = async (req, res) => {
     }
 };
 
-// RESET PASSWORD
+
 export const resetPassword = async (req, res) => {
     try {
         const {
@@ -452,7 +452,7 @@ export const resetPassword = async (req, res) => {
     }
 };
 
-// GOOGLE LOGIN
+
 export const googleLogin = async (req, res) => {
     try {
         const { credential } = req.body;
@@ -532,7 +532,7 @@ export const googleLogin = async (req, res) => {
     }
 };
 
-// GET CURRENT USER
+
 export const getMe = async (req, res) => {
     try {
         const user = await User.findById(
@@ -560,7 +560,6 @@ export const getMe = async (req, res) => {
     }
 };
 
-// LOGOUT
 export const logout = async (req, res) => {
     return res.json({
         success: true,
