@@ -32,6 +32,8 @@ const generateOTP = () => {
 
 // REGISTER
 export const register = async (req, res) => {
+    console.time("REGISTER TOTAL");
+
     try {
         const {
             name,
@@ -63,9 +65,11 @@ export const register = async (req, res) => {
 
         const normalizedEmail = email.trim().toLowerCase();
 
+        console.time("DATABASE FIND");
         const existingUser = await User.findOne({
             email: normalizedEmail
         });
+        console.timeEnd("DATABASE FIND");
 
         if (existingUser) {
             return res.status(409).json({
@@ -74,14 +78,16 @@ export const register = async (req, res) => {
             });
         }
 
-        const hashedPassword = await bcrypt.hash(
-            password,
-            10
-        );
+        console.time("PASSWORD HASH");
+        const hashedPassword = await bcrypt.hash(password, 10);
+        console.timeEnd("PASSWORD HASH");
 
         const otp = generateOTP();
+
+        // Local testing only. Remove before production.
         console.log("REGISTRATION OTP:", otp);
 
+        console.time("DATABASE CREATE");
         const user = await User.create({
             name,
             email: normalizedEmail,
@@ -94,13 +100,12 @@ export const register = async (req, res) => {
             ),
             role: "candidate"
         });
+        console.timeEnd("DATABASE CREATE");
 
-        // Send OTP before responding with success.
+        console.time("OTP EMAIL");
+
         try {
-            const info = await sendOTPEmail(
-                user.email,
-                otp
-            );
+            const info = await sendOTPEmail(user.email, otp);
 
             console.log("OTP email send operation completed.");
             console.log("Message ID:", info?.messageId);
@@ -113,15 +118,14 @@ export const register = async (req, res) => {
                 userId: user._id
             });
         } catch (emailError) {
-            console.error(
-                "OTP EMAIL ERROR:",
-                emailError.message
-            );
+            console.error("OTP EMAIL ERROR:", emailError.message);
 
             return res.status(500).json({
                 success: false,
-                message: "Account created, but OTP email could not be sent. Please contact support or request a new OTP."
+                message: "Account created, but OTP email could not be sent. Please request a new OTP."
             });
+        } finally {
+            console.timeEnd("OTP EMAIL");
         }
     } catch (error) {
         console.error("Register error:", error);
@@ -137,6 +141,8 @@ export const register = async (req, res) => {
             success: false,
             message: "Registration failed"
         });
+    } finally {
+        console.timeEnd("REGISTER TOTAL");
     }
 };
 
@@ -546,8 +552,6 @@ export const getMe = async (req, res) => {
         });
     } catch (error) {
         console.error("Get me error:", error);
-        console.error("Error message:", error.message);
-        console.error("req.user:", req.user);
 
         return res.status(500).json({
             success: false,
@@ -563,4 +567,3 @@ export const logout = async (req, res) => {
         message: "Logout successful"
     });
 };
-
