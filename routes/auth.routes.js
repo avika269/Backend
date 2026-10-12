@@ -3,6 +3,7 @@ import express from "express";
 import {
   register,
   verifyOTP,
+   resendRegistrationOTP,
   login,
   googleLogin,
   forgotPassword,
@@ -17,6 +18,7 @@ const router = express.Router();
 
 router.post("/register", register);
 router.post("/verify-otp", verifyOTP);
+router.post("/resend-otp", resendRegistrationOTP);
 router.post("/login", login);
 router.post("/google", googleLogin);
 router.post("/forgot-password", forgotPassword);

@@ -214,6 +214,74 @@ export const verifyOTP = async (req, res) => {
 };
 
 
+export const resendRegistrationOTP = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is required"
+            });
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const user = await User.findOne({
+            email: normalizedEmail
+        });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "Account not found. Please register first."
+            });
+        }
+
+        if (user.emailVerified) {
+            return res.status(400).json({
+                success: false,
+                message: "Email is already verified. Please log in."
+            });
+        }
+
+        const otp = generateOTP();
+
+        user.otp = otp;
+        user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+        await user.save();
+
+        try {
+            const info = await sendOTPEmail(user.email, otp);
+
+            if (info?.rejected?.length) {
+                throw new Error("Email provider rejected the recipient");
+            }
+
+            return res.json({
+                success: true,
+                message: "A new OTP has been sent to your email."
+            });
+        } catch (emailError) {
+            console.error("Resend registration OTP error:", emailError.message);
+
+            return res.status(502).json({
+                success: false,
+                message: "Could not send the OTP. Please try again."
+            });
+        }
+    } catch (error) {
+        console.error("Resend registration OTP error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Failed to resend OTP."
+        });
+    }
+};
+
+
 export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
