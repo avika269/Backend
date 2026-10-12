@@ -311,7 +311,8 @@ export const resendRegistrationOTP = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Could not send the OTP. Please try again."
+                message: "Could not send the OTP. Please try again.",
+                error: emailError.message
             });
         }
     } catch (error) {

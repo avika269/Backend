@@ -47,10 +47,32 @@ app.get("/", (req, res) => {
   });
 });
 
-app.get("/api/health/email", (req, res) => {
+app.get("/api/health/email", async (req, res) => {
+  const rawKey = process.env.BREVO_API_KEY || "";
+  const cleanKey = rawKey.trim().replace(/^['"]|['"]$/g, "");
+  let brevoAccount = null;
+
+  if (cleanKey) {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/account", {
+        headers: { "api-key": cleanKey }
+      });
+      const data = await response.json().catch(() => ({}));
+      brevoAccount = {
+        httpStatus: response.status,
+        email: data.email,
+        message: data.message || (response.ok ? "OK" : "Failed")
+      };
+    } catch (err) {
+      brevoAccount = { error: err.message };
+    }
+  }
+
   res.json({
-    brevoKeyConfigured: Boolean(process.env.BREVO_API_KEY?.trim()),
-    emailUser: process.env.EMAIL_USER || null
+    brevoKeyConfigured: Boolean(cleanKey),
+    keyLength: cleanKey.length,
+    emailUser: process.env.EMAIL_USER || null,
+    brevoAccount
   });
 });
 

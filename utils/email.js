@@ -4,31 +4,40 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
+export const getBrevoApiKey = () => {
+    return (process.env.BREVO_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
+};
+
 const BREVO_SENDER_NAME = process.env.BREVO_SENDER_NAME || "SmartRecruit";
 
 let cachedSenderEmail = null;
-const getBrevoSenderEmail = async () => {
+export const getBrevoSenderEmail = async () => {
     if (process.env.BREVO_SENDER_EMAIL) {
-        return process.env.BREVO_SENDER_EMAIL;
+        return process.env.BREVO_SENDER_EMAIL.trim();
+    }
+    if (process.env.EMAIL_USER && process.env.EMAIL_USER.includes("@")) {
+        return process.env.EMAIL_USER.trim();
     }
     if (cachedSenderEmail) {
         return cachedSenderEmail;
     }
-    try {
-        const res = await fetch("https://api.brevo.com/v3/senders", {
-            headers: { "api-key": BREVO_API_KEY }
-        });
-        if (res.ok) {
-            const data = await res.json();
-            const activeSender = data.senders?.find((s) => s.active)?.email;
-            if (activeSender) {
-                cachedSenderEmail = activeSender;
-                return activeSender;
+    const apiKey = getBrevoApiKey();
+    if (apiKey) {
+        try {
+            const res = await fetch("https://api.brevo.com/v3/senders", {
+                headers: { "api-key": apiKey }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const activeSender = data.senders?.find((s) => s.active)?.email;
+                if (activeSender) {
+                    cachedSenderEmail = activeSender;
+                    return activeSender;
+                }
             }
+        } catch (e) {
+            console.warn("Could not fetch Brevo senders list:", e.message);
         }
-    } catch (e) {
-        console.warn("Could not fetch Brevo senders list:", e.message);
     }
     return "agarwalsanyam150@gmail.com";
 };
@@ -37,13 +46,13 @@ const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
 
 console.log("Email configuration:");
-console.log("BREVO_API_KEY exists:", Boolean(BREVO_API_KEY));
+console.log("BREVO_API_KEY exists:", Boolean(getBrevoApiKey()));
 console.log("EMAIL_USER exists:", Boolean(EMAIL_USER));
 console.log("EMAIL_PASS exists:", Boolean(EMAIL_PASS));
 
 // Nodemailer transport as fallback when BREVO_API_KEY is not set
 let transporter = null;
-if (!BREVO_API_KEY && EMAIL_USER && EMAIL_PASS) {
+if (!getBrevoApiKey() && EMAIL_USER && EMAIL_PASS) {
     transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
@@ -59,10 +68,11 @@ if (!BREVO_API_KEY && EMAIL_USER && EMAIL_PASS) {
 }
 
 export const verifyEmailConfiguration = async () => {
-    if (BREVO_API_KEY) {
+    const apiKey = getBrevoApiKey();
+    if (apiKey) {
         try {
             const response = await fetch("https://api.brevo.com/v3/account", {
-                headers: { "api-key": BREVO_API_KEY }
+                headers: { "api-key": apiKey }
             });
             if (response.ok) {
                 console.log("Brevo API connection verified successfully.");
@@ -131,10 +141,11 @@ const sendViaBrevo = async (email, otp, isReset) => {
 
     try {
         const senderEmail = await getBrevoSenderEmail();
+        const apiKey = getBrevoApiKey();
         const response = await fetch("https://api.brevo.com/v3/smtp/email", {
             method: "POST",
             headers: {
-                "api-key": BREVO_API_KEY,
+                "api-key": apiKey,
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
@@ -216,7 +227,8 @@ export const sendOTPEmail = async (
     console.log("Attempting to send OTP email to:", email, `(Type: ${type})`);
 
     try {
-        if (BREVO_API_KEY) {
+        const apiKey = getBrevoApiKey();
+        if (apiKey) {
             console.log("Sending email via Brevo REST API (HTTPS)...");
             return await sendViaBrevo(email, otp, isReset);
         }
