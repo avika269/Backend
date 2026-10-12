@@ -47,6 +47,13 @@ app.get("/", (req, res) => {
   });
 });
 
+app.get("/api/health/email", (req, res) => {
+  res.json({
+    brevoKeyConfigured: Boolean(process.env.BREVO_API_KEY?.trim()),
+    emailUser: process.env.EMAIL_USER || null
+  });
+});
+
 app.use("/api/auth", authRoutes);
 console.log("DRIVE ROUTES LOADED");
 app.use("/api/drives", driveRoutes);

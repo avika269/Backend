@@ -107,7 +107,8 @@ export const register = async (req, res) => {
                 console.error("OTP EMAIL ERROR:", emailError.message);
                 return res.status(500).json({
                     success: false,
-                    message: "Account updated, but OTP email could not be sent. Please request a new OTP."
+                    message: "Account updated, but OTP email could not be sent. Please request a new OTP.",
+                    error: emailError.message
                 });
             } finally {
                 console.timeEnd("OTP EMAIL");
@@ -154,7 +155,8 @@ export const register = async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                message: "Account created, but OTP email could not be sent. Please request a new OTP."
+                message: "Account created, but OTP email could not be sent. Please request a new OTP.",
+                error: emailError.message
             });
         } finally {
             console.timeEnd("OTP EMAIL");
