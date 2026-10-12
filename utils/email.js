@@ -5,11 +5,33 @@ import nodemailer from "nodemailer";
 dotenv.config();
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const BREVO_SENDER_EMAIL =
-    process.env.BREVO_SENDER_EMAIL ||
-    process.env.EMAIL_USER ||
-    "agarwalsanyam150@gmail.com";
 const BREVO_SENDER_NAME = process.env.BREVO_SENDER_NAME || "SmartRecruit";
+
+let cachedSenderEmail = null;
+const getBrevoSenderEmail = async () => {
+    if (process.env.BREVO_SENDER_EMAIL) {
+        return process.env.BREVO_SENDER_EMAIL;
+    }
+    if (cachedSenderEmail) {
+        return cachedSenderEmail;
+    }
+    try {
+        const res = await fetch("https://api.brevo.com/v3/senders", {
+            headers: { "api-key": BREVO_API_KEY }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const activeSender = data.senders?.find((s) => s.active)?.email;
+            if (activeSender) {
+                cachedSenderEmail = activeSender;
+                return activeSender;
+            }
+        }
+    } catch (e) {
+        console.warn("Could not fetch Brevo senders list:", e.message);
+    }
+    return "agarwalsanyam150@gmail.com";
+};
 
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
@@ -108,6 +130,7 @@ const sendViaBrevo = async (email, otp, isReset) => {
     const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     try {
+        const senderEmail = await getBrevoSenderEmail();
         const response = await fetch("https://api.brevo.com/v3/smtp/email", {
             method: "POST",
             headers: {
@@ -118,7 +141,7 @@ const sendViaBrevo = async (email, otp, isReset) => {
             body: JSON.stringify({
                 sender: {
                     name: BREVO_SENDER_NAME,
-                    email: BREVO_SENDER_EMAIL
+                    email: senderEmail
                 },
                 to: [{ email }],
                 subject,
