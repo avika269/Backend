@@ -1,27 +1,13 @@
-
 import express from "express";
-
 import {
-  createProctoringEvent,
-  getProctoringEvaluation,
-  analyzeProctoring
-} from "../controllers/proctoring.controller.js";
+  getMlHealth,
+  predictActivity
+} from "../controllers/ml.controller.js";
+import authMiddleware from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post(
-  "/:attemptId/events",
-  createProctoringEvent
-);
-
-router.get(
-  "/:attemptId/evaluation",
-  getProctoringEvaluation
-);
-
-router.post(
-  "/:attemptId/analyze",
-  analyzeProctoring
-);
+router.get("/health", getMlHealth);
+router.post("/predict-face-activity", authMiddleware, predictActivity);
 
 export default router;
