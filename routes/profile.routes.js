@@ -1,10 +1,12 @@
+
 import express from "express";
 
 import {
   analyzeCandidateProfile,
   getCandidateProfile,
   updateCandidateProfile,
-  deleteCandidateProfile
+  deleteCandidateProfile,
+  getCandidateInterview
 } from "../controllers/profile.controller.js";
 
 import authMiddleware from "../middleware/auth.middleware.js";
@@ -23,6 +25,12 @@ router.get(
   "/",
   authMiddleware,
   getCandidateProfile
+);
+
+router.get(
+  "/interview",
+  authMiddleware,
+  getCandidateInterview
 );
 
 router.put(
