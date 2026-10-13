@@ -39,7 +39,8 @@ export const register = async (req, res) => {
             name,
             email,
             password,
-            confirmPassword
+            confirmPassword,
+            role
         } = req.body;
 
         if (!name || !email || !password || !confirmPassword) {
@@ -71,18 +72,50 @@ export const register = async (req, res) => {
         });
         console.timeEnd("DATABASE FIND");
 
+        const otp = generateOTP();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const validRole = (role && ["candidate", "recruiter", "admin"].includes(role)) ? role : "candidate";
+
         if (existingUser) {
-            return res.status(409).json({
-                success: false,
-                message: "Email already registered"
-            });
+            if (existingUser.emailVerified) {
+                return res.status(409).json({
+                    success: false,
+                    message: "Email already registered. Please log in."
+                });
+            }
+
+            console.log("REGISTRATION OTP (RESENT FOR UNVERIFIED USER):", otp);
+            existingUser.name = name;
+            existingUser.password = hashedPassword;
+            existingUser.role = validRole;
+            existingUser.otp = otp;
+            existingUser.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+            await existingUser.save();
+
+            console.time("OTP EMAIL");
+            try {
+                const info = await sendOTPEmail(existingUser.email, otp);
+                console.log("OTP email send operation completed.");
+                console.log("Message ID:", info?.messageId);
+
+                return res.status(200).json({
+                    success: true,
+                    message: "Account updated. OTP sent to your email.",
+                    userId: existingUser._id
+                });
+            } catch (emailError) {
+                console.error("OTP EMAIL ERROR:", emailError.message);
+                return res.status(500).json({
+                    success: false,
+                    message: "Account updated, but OTP email could not be sent. Please request a new OTP.",
+                    error: emailError.message
+                });
+            } finally {
+                console.timeEnd("OTP EMAIL");
+            }
         }
 
-        console.time("PASSWORD HASH");
-        const hashedPassword = await bcrypt.hash(password, 10);
-        console.timeEnd("PASSWORD HASH");
 
-        const otp = generateOTP();
 
         // Local testing only. Remove before production.
         console.log("REGISTRATION OTP:", otp);
@@ -98,7 +131,7 @@ export const register = async (req, res) => {
             otpExpiresAt: new Date(
                 Date.now() + 10 * 60 * 1000
             ),
-            role: "candidate"
+            role: validRole
         });
         console.timeEnd("DATABASE CREATE");
 
@@ -122,7 +155,8 @@ export const register = async (req, res) => {
 
             return res.status(500).json({
                 success: false,
-                message: "Account created, but OTP email could not be sent. Please request a new OTP."
+                message: "Account created, but OTP email could not be sent. Please request a new OTP.",
+                error: emailError.message
             });
         } finally {
             console.timeEnd("OTP EMAIL");
@@ -199,9 +233,18 @@ export const verifyOTP = async (req, res) => {
 
         await user.save();
 
+        const token = generateToken(user);
+
         return res.json({
             success: true,
-            message: "Email verified successfully"
+            message: "Email verified successfully",
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
         });
     } catch (error) {
         console.error("Verify OTP error:", error);
@@ -268,7 +311,8 @@ export const resendRegistrationOTP = async (req, res) => {
 
             return res.status(502).json({
                 success: false,
-                message: "Could not send the OTP. Please try again."
+                message: "Could not send the OTP. Please try again.",
+                error: emailError.message
             });
         }
     } catch (error) {

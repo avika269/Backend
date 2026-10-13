@@ -31,7 +31,7 @@ const allowedOrigins = new Set([
   "http://localhost:3000",
   "http://127.0.0.1:5173",
   // Keep the original production origin from the main backend.
-  "https://smart-recruit-b5up.vercel.app",
+  "https://smart-recruit-chi.vercel.app/",
   String(env.frontendUrl || "").replace(/\/$/, ""),
   ...env.corsOrigins
 ].filter(Boolean));
