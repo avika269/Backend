@@ -64,6 +64,12 @@ const scorecardSchema = new mongoose.Schema(
       default: false
     },
 
+    recruiterNote: {
+      type: String,
+      default: "",
+      maxlength: 4000
+    },
+
     recruiterDecision: {
       type: String,
       enum: [

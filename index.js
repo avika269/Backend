@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 
-
+import { env } from "./env.js";
 import authRoutes from "./routes/auth.routes.js";
 import driveRoutes from "./routes/drive.routes.js";
 import questionRoutes from "./routes/question.routes.js";
@@ -14,6 +14,8 @@ import attemptRoutes from "./routes/attempt.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import proctoringRoutes from "./routes/proctoring.routes.js";
 import mlRoutes from "./routes/ml.routes.js";
+import scorecardRoutes from "./routes/scorecard.routes.js";
+import recruiterRoutes from "./routes/recruiter.routes.js";
 
 import {
   notFoundMiddleware,
@@ -24,20 +26,29 @@ dotenv.config();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://smart-recruit-chi.vercel.app"
-    ],
-    credentials: true
-  })
-);
+const allowedOrigins = new Set([
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://127.0.0.1:5173",
+  // Keep the original production origin from the main backend.
+  "https://smart-recruit-b5up.vercel.app",
+  String(env.frontendUrl || "").replace(/\/$/, ""),
+  ...env.corsOrigins
+].filter(Boolean));
 
-app.use(express.json());
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow non-browser clients and the explicitly configured origins.
+    if (!origin || allowedOrigins.has(origin.replace(/\/$/, ""))) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked origin: ${origin}`));
+  },
+  credentials: true
+}));
+
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
-
 app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
@@ -45,6 +56,10 @@ app.get("/", (req, res) => {
     success: true,
     message: "SmartRecruit Backend Running"
   });
+});
+
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", service: "SmartRecruit Backend" });
 });
 
 app.use("/api/auth", authRoutes);
@@ -58,24 +73,23 @@ app.use("/api/attempts", attemptRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/proctoring", proctoringRoutes);
 app.use("/api/ml", mlRoutes);
+app.use("/api/scorecards", scorecardRoutes);
+app.use("/api/recruiter", recruiterRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(env.mongoUri)
   .then(() => {
     console.log("MongoDB connected successfully");
 
-    app.listen(process.env.PORT || 3500, () => {
-      console.log(
-        `Server running on http://localhost:${process.env.PORT || 3500}`
-      );
+    app.listen(env.port, () => {
+      console.log(`Server running on port ${env.port}`);
+      console.log(`ML service configured at ${env.mlApiUrl}`);
     });
   })
   .catch((error) => {
-    console.log(
-      "MongoDB connection error:",
-      error.message
-    );
+    console.error("MongoDB connection error:", error.message);
+    process.exit(1);
   });

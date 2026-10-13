@@ -10,14 +10,8 @@ const candidateProfileSchema = new mongoose.Schema(
     },
 
     github: {
-      username: {
-        type: String,
-        trim: true
-      },
-      profileUrl: {
-        type: String,
-        trim: true
-      },
+      username: { type: String, trim: true },
+      profileUrl: { type: String, trim: true },
       repositories: [
         {
           name: String,
@@ -42,6 +36,9 @@ const candidateProfileSchema = new mongoose.Schema(
     resume: {
       fileName: String,
       filePath: String,
+      // Store PDF bytes so the ML call still works on ephemeral hosting disks.
+      // `select: false` prevents resume contents from being returned by default.
+      data: { type: Buffer, select: false },
       uploadedAt: Date
     },
 
@@ -49,15 +46,7 @@ const candidateProfileSchema = new mongoose.Schema(
       name: String,
       email: String,
       phone: String,
-       phone: String,
-
-      skills: [
-        {
-          type: String,
-          trim: true
-        }
-      ],
-
+      skills: [{ type: String, trim: true }],
       projects: [
         {
           name: String,
@@ -66,7 +55,6 @@ const candidateProfileSchema = new mongoose.Schema(
           githubUrl: String
         }
       ],
-
       education: [
         {
           institution: String,
@@ -74,7 +62,6 @@ const candidateProfileSchema = new mongoose.Schema(
           year: String
         }
       ],
-
       experience: [
         {
           company: String,
@@ -85,16 +72,21 @@ const candidateProfileSchema = new mongoose.Schema(
     },
 
     rawResumeText: String,
-
     candidateProfileJson: mongoose.Schema.Types.Mixed,
 
-    mlCategory: String,
+    // ML-generated profile/interview fields added without removing the main schema.
+    mlInterview: mongoose.Schema.Types.Mixed,
+    mlInterviewStatus: {
+      type: String,
+      enum: ["none", "pending", "ready", "failed"],
+      default: "none"
+    },
+    mlInterviewError: { type: String, default: "" },
 
+    mlCategory: String,
     mlConfidence: Number
   },
-  {
-    timestamps: true
-  }
+  { timestamps: true }
 );
 
 const CandidateProfile = mongoose.model(
