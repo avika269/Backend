@@ -22,7 +22,7 @@ export const env = {
     .map((origin) => origin.trim().replace(/\/$/, ""))
     .filter(Boolean),
 
-  // Python FastAPI ML service.
+ 
   mlApiUrl: (process.env.ML_API_URL || "http://localhost:8000")
     .trim()
     .replace(/\/$/, ""),
