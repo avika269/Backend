@@ -692,6 +692,7 @@ export const syncLegacyCandidateInterviewSummary = async (req, res) => {
 };
 
 
+
 export const updateCandidateProfile = async (req, res) => {
   let uploadedFilePath = req.file?.path;
 
@@ -705,16 +706,28 @@ export const updateCandidateProfile = async (req, res) => {
       });
     }
 
-    const { githubUrl } = req.body || {};
+    const {
+      name,
+      fullName,
+      email,
+      phone,
+      college,
+      githubUrl
+    } = req.body || {};
 
-    if (!req.file && !githubUrl) {
-      return res.status(400).json({
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: "Provide a resume PDF or GitHub profile URL."
+        message: "User not found."
       });
     }
 
-    if (req.file && !req.file.originalname?.toLowerCase().endsWith(".pdf")) {
+    if (
+      req.file &&
+      !req.file.originalname?.toLowerCase().endsWith(".pdf")
+    ) {
       return res.status(400).json({
         success: false,
         message: "Please upload a PDF resume."
@@ -723,9 +736,9 @@ export const updateCandidateProfile = async (req, res) => {
 
     let githubUsername = null;
 
-    if (githubUrl) {
+    if (githubUrl?.trim()) {
       try {
-        githubUsername = getGithubUsername(githubUrl);
+        githubUsername = getGithubUsername(githubUrl.trim());
       } catch {
         return res.status(400).json({
           success: false,
@@ -734,13 +747,101 @@ export const updateCandidateProfile = async (req, res) => {
       }
     }
 
-    const profile = await CandidateProfile.findOne({ userId });
+    const updatedName = String(fullName ?? name ?? user.name ?? "").trim();
+    const updatedEmail = String(email ?? user.email ?? "").trim();
+    const updatedPhone = String(phone ?? user.phone ?? "").trim();
+
+    if (!updatedName || !updatedEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and email are required."
+      });
+    }
+
+    user.name = updatedName;
+    user.email = updatedEmail;
+    user.phone = updatedPhone;
+
+    if (college !== undefined && "college" in user) {
+      user.college = String(college).trim();
+    }
+
+    await user.save();
+
+    let profile = await CandidateProfile.findOne({ userId });
 
     if (!profile) {
-      return res.status(404).json({
-        success: false,
-        message: "Candidate profile not found. Analyze your profile first."
+      profile = new CandidateProfile({
+        userId,
+        github: {
+          username: githubUsername || "",
+          profileUrl: githubUsername
+            ? `https://github.com/${githubUsername}`
+            : "",
+          repositories: []
+        },
+        profile: {
+          name: updatedName,
+          email: updatedEmail,
+          phone: updatedPhone,
+          skills: [],
+          projects: [],
+          education: [],
+          experience: []
+        },
+        candidateProfileJson: {
+          candidate: {
+            name: updatedName,
+            email: updatedEmail,
+            phone: updatedPhone,
+            ...(college !== undefined
+              ? { college: String(college).trim() }
+              : {})
+          },
+          resume: {},
+          github: {},
+          skills: [],
+          projects: [],
+          education: [],
+          experience: []
+        },
+        mlInterviewStatus: "none",
+        mlInterviewError: ""
       });
+    }
+
+    profile.profile = {
+      ...(profile.profile?.toObject?.() || profile.profile || {}),
+      name: updatedName,
+      email: updatedEmail,
+      phone: updatedPhone
+    };
+
+    profile.candidateProfileJson = {
+      ...(profile.candidateProfileJson?.toObject?.() ||
+        profile.candidateProfileJson ||
+        {}),
+      candidate: {
+        ...(profile.candidateProfileJson?.candidate || {}),
+        name: updatedName,
+        email: updatedEmail,
+        phone: updatedPhone,
+        ...(college !== undefined
+          ? { college: String(college).trim() }
+          : {})
+      }
+    };
+
+    if (githubUsername) {
+      profile.github = {
+        ...(profile.github?.toObject?.() || profile.github || {}),
+        username: githubUsername,
+        profileUrl: `https://github.com/${githubUsername}`
+      };
+
+      profile.mlInterview = null;
+      profile.mlInterviewStatus = "pending";
+      profile.mlInterviewError = "";
     }
 
     if (req.file) {
@@ -761,22 +862,10 @@ export const updateCandidateProfile = async (req, res) => {
       profile.mlConfidence = null;
     }
 
-    if (githubUsername) {
-      profile.github = {
-        ...(profile.github?.toObject?.() || profile.github || {}),
-        username: githubUsername,
-        profileUrl: `https://github.com/${githubUsername}`
-      };
-
-      profile.mlInterview = null;
-      profile.mlInterviewStatus = "pending";
-      profile.mlInterviewError = "";
-    }
-
     await profile.save();
 
     if (githubUsername) {
-      analyzeGithub(githubUrl)
+      analyzeGithub(githubUrl.trim())
         .then(async (githubAnalysis) => {
           await CandidateProfile.updateOne(
             { userId },
@@ -784,14 +873,15 @@ export const updateCandidateProfile = async (req, res) => {
           );
         })
         .catch((error) => {
-          console.warn(
-            "GitHub profile update failed:",
-            error.message
-          );
+          console.warn("GitHub profile update failed:", error.message);
         });
     }
 
-    if (req.file || githubUsername) {
+    if (
+      (req.file || githubUsername) &&
+      (profile.resume?.data || profile.resume?.filePath) &&
+      profile.github?.username
+    ) {
       runInterviewJob(userId).catch((error) => {
         console.error(
           "Candidate interview regeneration failed:",
@@ -802,11 +892,19 @@ export const updateCandidateProfile = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Candidate profile updated successfully.",
-      status: profile.mlInterviewStatus
+      message: "Candidate profile saved successfully.",
+      status: profile.mlInterviewStatus || "none",
+      candidateProfile: profile.candidateProfileJson
     });
   } catch (error) {
     console.error("Update candidate profile error:", error);
+
+    if (error?.code === 11000) {
+      return res.status(409).json({
+        success: false,
+        message: "This email may already be registered."
+      });
+    }
 
     return res.status(500).json({
       success: false,
@@ -814,10 +912,11 @@ export const updateCandidateProfile = async (req, res) => {
     });
   } finally {
     if (uploadedFilePath) {
-      fs.unlink(uploadedFilePath).catch(() => {});
+      await fs.unlink(uploadedFilePath).catch(() => {});
     }
   }
 };
+
 
 
 export const deleteCandidateProfile = async (req, res) => {
