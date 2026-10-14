@@ -67,6 +67,7 @@ console.log("DRIVE ROUTES LOADED");
 app.use("/api/drives", driveRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/assessment", assessmentRoutes);
+app.use("/api/assessments", assessmentRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/evaluations", evaluationRoutes);
 app.use("/api/attempts", attemptRoutes);

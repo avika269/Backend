@@ -361,7 +361,9 @@ export const generateAssessment = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Assessment retrieved successfully",
+      assessmentId: assessment._id.toString(),
       data: {
+        assessmentId: assessment._id.toString(),
         assessment
       }
     });
