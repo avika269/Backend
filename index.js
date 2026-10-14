@@ -1,3 +1,4 @@
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -16,6 +17,7 @@ import proctoringRoutes from "./routes/proctoring.routes.js";
 import mlRoutes from "./routes/ml.routes.js";
 import scorecardRoutes from "./routes/scorecard.routes.js";
 import recruiterRoutes from "./routes/recruiter.routes.js";
+import candidateRoutes from "./routes/candidate.routes.js";
 
 import {
   notFoundMiddleware,
@@ -30,14 +32,13 @@ const allowedOrigins = new Set([
   "http://localhost:5173",
   "http://localhost:3000",
   "http://127.0.0.1:5173",
-  "https://smart-recruit-chi.vercel.app/",
+  "https://smart-recruit-chi.vercel.app",
   String(env.frontendUrl || "").replace(/\/$/, ""),
   ...env.corsOrigins.map((origin) => origin.replace(/\/$/, ""))
 ].filter(Boolean));
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow non-browser clients and the explicitly configured origins.
     if (!origin || allowedOrigins.has(origin.replace(/\/$/, ""))) {
       return callback(null, true);
     }
@@ -70,6 +71,7 @@ app.use("/api/submissions", submissionRoutes);
 app.use("/api/evaluations", evaluationRoutes);
 app.use("/api/attempts", attemptRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/candidate", candidateRoutes);
 app.use("/api/proctoring", proctoringRoutes);
 app.use("/api/ml", mlRoutes);
 app.use("/api/scorecards", scorecardRoutes);
