@@ -2,7 +2,8 @@ import express from "express";
 
 import {
   createAssessment,
-  getAssessment
+  getAssessment,
+  
 } from "../controllers/assessment.controller.js";
 
 import authMiddleware from "../middleware/auth.middleware.js";
