@@ -192,16 +192,25 @@ export const analyzeCandidateProfile = async (req, res) => {
 
     // Preserve the main backend's detailed GitHub repository analysis, but do
     // it asynchronously so API registration/upload isn't held open by GitHub.
-    analyzeGithub(githubUrl)
-      .then((githubAnalysis) =>
-        CandidateProfile.updateOne(
-          { userId: user._id },
-          { $set: { github: githubAnalysis } }
-        )
-      )
-      .catch((error) => {
-        console.warn("Local GitHub analysis failed:", error.message);
-      });
+    
+analyzeGithub(githubUrl)
+  .then(async (githubAnalysis) => {
+    const updateResult = await CandidateProfile.updateOne(
+      { userId: user._id },
+      { $set: { github: githubAnalysis } },
+      { runValidators: true }
+    );
+
+    console.log("GitHub analysis save result:", {
+      matchedCount: updateResult.matchedCount,
+      modifiedCount: updateResult.modifiedCount,
+      repositoryCount: githubAnalysis.repositories.length
+    });
+  })
+  .catch((error) => {
+    console.error("Local GitHub analysis or save failed:", error);
+  });
+
 
     runInterviewJob(user._id).catch((error) => {
       console.error("Candidate ML job failed:", error.message);
